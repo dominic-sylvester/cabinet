@@ -1,7 +1,12 @@
 import fs from "fs";
 import os from "os";
 import path from "path";
-import type { AgentProvider, ProviderStatus } from "../provider-interface";
+import type {
+  AgentProvider,
+  ProviderEffortLevel,
+  ProviderModel,
+  ProviderStatus,
+} from "../provider-interface";
 import {
   buildCommandCandidates,
   checkCliProviderAvailable,
@@ -77,6 +82,209 @@ const CODEX_MAX_REASONING_LEVELS = [
   },
 ] as const;
 
+// Effort rungs as `codex debug models` reports them for the current
+// generation (through `ultra`); the fast/cheap variants stop at `max`.
+const CODEX_CATALOG_REASONING_LEVELS = [
+  {
+    id: "low",
+    name: "Low",
+    description: "Fast responses with lighter reasoning",
+  },
+  {
+    id: "medium",
+    name: "Medium",
+    description: "Balances speed and reasoning depth for everyday tasks",
+  },
+  {
+    id: "high",
+    name: "High",
+    description: "Greater reasoning depth for complex problems",
+  },
+  {
+    id: "xhigh",
+    name: "Extra High",
+    description: "Extra high reasoning depth for complex problems",
+  },
+  {
+    id: "max",
+    name: "Max",
+    description: "Maximum reasoning depth for the hardest problems",
+  },
+  {
+    id: "ultra",
+    name: "Ultra",
+    description: "Maximum reasoning with automatic task delegation",
+  },
+] as const;
+
+const CODEX_CATALOG_REASONING_LEVELS_NO_ULTRA =
+  CODEX_CATALOG_REASONING_LEVELS.filter((level) => level.id !== "ultra");
+
+const EFFORT_LEVEL_NAMES: Record<string, string> = {
+  none: "None",
+  minimal: "Minimal",
+  low: "Low",
+  medium: "Medium",
+  high: "High",
+  xhigh: "Extra High",
+  max: "Max",
+  ultra: "Ultra",
+};
+
+function effortLevelName(effort: string): string {
+  const known = EFFORT_LEVEL_NAMES[effort];
+  if (known) return known;
+  return effort.charAt(0).toUpperCase() + effort.slice(1);
+}
+
+function parseCodexEffortLevels(raw: unknown): ProviderEffortLevel[] {
+  if (!Array.isArray(raw)) return [];
+  const levels: ProviderEffortLevel[] = [];
+  const seen = new Set<string>();
+  for (const entry of raw) {
+    if (!entry || typeof entry !== "object") continue;
+    const record = entry as { effort?: unknown; description?: unknown };
+    const id = typeof record.effort === "string" ? record.effort.trim() : "";
+    if (!id || seen.has(id)) continue;
+    seen.add(id);
+    const description =
+      typeof record.description === "string" && record.description.trim()
+        ? record.description.trim()
+        : undefined;
+    levels.push({
+      id,
+      name: effortLevelName(id),
+      ...(description ? { description } : {}),
+    });
+  }
+  return levels;
+}
+
+/**
+ * Pure parser for `codex debug models` stdout — the CLI's own catalog (the same
+ * payload it caches at `~/.codex/models_cache.json`), which is *ahead* of any
+ * hardcoded list this app ships. Hidden entries (`gpt-reserve`,
+ * `codex-auto-review`) are internal aliases the CLI resolves itself, so they
+ * are dropped: offering them in a picker invites dead selections.
+ *
+ * Empty/unparseable output returns `[]` so the caller can decide to fall back
+ * to the static list with an honest `dynamic: false`.
+ */
+export function parseCodexModels(
+  stdout: string | null | undefined,
+): ProviderModel[] {
+  const text = (stdout || "").trim();
+  if (!text) return [];
+  // Tolerate CLI chrome before the JSON payload (warnings, `Reading ...`).
+  const start = text.indexOf("{");
+  if (start === -1) return [];
+
+  let payload: unknown;
+  try {
+    payload = JSON.parse(text.slice(start));
+  } catch {
+    return [];
+  }
+  if (!payload || typeof payload !== "object") return [];
+  const raw = (payload as { models?: unknown }).models;
+  if (!Array.isArray(raw)) return [];
+
+  const models: ProviderModel[] = [];
+  const seen = new Set<string>();
+  for (const entry of raw) {
+    if (!entry || typeof entry !== "object") continue;
+    const record = entry as {
+      slug?: unknown;
+      display_name?: unknown;
+      description?: unknown;
+      visibility?: unknown;
+      supported_reasoning_levels?: unknown;
+    };
+    const id = typeof record.slug === "string" ? record.slug.trim() : "";
+    if (!id || seen.has(id)) continue;
+    if (record.visibility === "hide") continue;
+    seen.add(id);
+
+    const displayName =
+      typeof record.display_name === "string" && record.display_name.trim()
+        ? record.display_name.trim()
+        : id;
+    const description =
+      typeof record.description === "string" && record.description.trim()
+        ? record.description.trim()
+        : undefined;
+    const effortLevels = parseCodexEffortLevels(
+      record.supported_reasoning_levels,
+    );
+
+    models.push({
+      id,
+      name: displayName,
+      ...(description ? { description } : {}),
+      ...(effortLevels.length > 0 ? { effortLevels } : {}),
+    });
+  }
+
+  return models;
+}
+
+/**
+ * Offline fallback catalog, refreshed from `codex debug models` (Codex
+ * 0.167.2, 2026-11-13). Only used when live discovery fails — a live
+ * `listModels()` result wins, so this list going stale degrades to "the
+ * models we knew about at build time", never to an empty picker.
+ */
+const CODEX_CURRENT_MODELS: ProviderModel[] = [
+  {
+    id: "gpt-6.1-sol",
+    name: "GPT-6.1-Sol",
+    description: "Latest workhorse model for coding and everyday work.",
+    effortLevels: [...CODEX_CATALOG_REASONING_LEVELS],
+  },
+  {
+    id: "gpt-6-astra",
+    name: "GPT-6-Astra",
+    description: "Frontier intelligence for the most demanding work.",
+    effortLevels: [...CODEX_CATALOG_REASONING_LEVELS],
+  },
+  {
+    id: "gpt-6.1-terra",
+    name: "GPT-6.1 Terra",
+    description: "GPT-6.1 Terra Codex model.",
+    effortLevels: [...CODEX_CATALOG_REASONING_LEVELS],
+  },
+  {
+    id: "gpt-6-sol",
+    name: "GPT-6-Sol",
+    description: "Previous generation workhorse model.",
+    effortLevels: [...CODEX_CATALOG_REASONING_LEVELS],
+  },
+  {
+    id: "gpt-6-luna",
+    name: "GPT-6-Luna",
+    description: "Fast and affordable model for easier tasks.",
+    effortLevels: [...CODEX_CATALOG_REASONING_LEVELS_NO_ULTRA],
+  },
+  {
+    id: "gpt-5.6-sol",
+    name: "GPT-5.6-Sol",
+    description: "Older generation workhorse model.",
+    effortLevels: [...CODEX_CATALOG_REASONING_LEVELS],
+  },
+  {
+    id: "gpt-5.6-terra",
+    name: "GPT-5.6-Terra",
+    description: "Older balanced model for straightforward work.",
+    effortLevels: [...CODEX_CATALOG_REASONING_LEVELS],
+  },
+  {
+    id: "gpt-5.6-luna",
+    name: "GPT-5.6-Luna",
+    description: "Older fast and efficient model.",
+    effortLevels: [...CODEX_CATALOG_REASONING_LEVELS_NO_ULTRA],
+  },
+];
+
 export const codexCliProvider: AgentProvider = {
   id: "codex-cli",
   name: "Codex CLI",
@@ -90,13 +298,17 @@ export const codexCliProvider: AgentProvider = {
     { title: "Verify setup", detail: "Confirm headless mode works:", command: "codex exec --skip-git-repo-check --dangerously-bypass-approvals-and-sandbox 'Reply with exactly OK'" },
   ],
   detachedPromptLaunchMode: "one-shot",
-  // Models are annotated with `requires` so UI pickers can badge entries the
+  // The picker's real list comes from `listModels()` below (live
+  // `codex debug models`). This array is the *offline* fallback the models API
+  // route serves when that probe fails: the current generation first, then
+  // legacy ids annotated with `requires` so pickers can badge entries the
   // user's current auth mode can't hit. Per OpenAI's Codex models docs
   // (verified 2026-05-03): `gpt-5.5` and `gpt-5.3-codex-spark` are
   // ChatGPT-only; the older `*-codex` / `o*` / `gpt-4.1*` ids are API-key
   // only; the `gpt-5.4`/`gpt-5.4-mini`/`gpt-5.3-codex`/`gpt-5.2` line works
   // with both auth modes.
   models: [
+    ...CODEX_CURRENT_MODELS,
     {
       id: "gpt-5.5",
       name: "GPT-5.5",
@@ -249,6 +461,21 @@ export const codexCliProvider: AgentProvider = {
       args,
       initialPrompt: prompt?.trim() || undefined,
     };
+  },
+
+  // Live discovery: `codex debug models` renders the CLI's own catalog, so a
+  // model released after this app build shows up in the composer without an
+  // app update. Throws on a genuine CLI failure (missing binary, not runnable,
+  // empty catalog) — the models API route catches that and serves the static
+  // fallback with `dynamic: false` so the picker can say "offline defaults".
+  async listModels(): Promise<ProviderModel[]> {
+    const command = resolveCliCommand(this);
+    const stdout = await execCli(command, ["debug", "models"], { timeout: 20_000 });
+    const models = parseCodexModels(stdout);
+    if (models.length === 0) {
+      throw new Error("codex debug models returned no models");
+    }
+    return models;
   },
 
   async isAvailable(): Promise<boolean> {
