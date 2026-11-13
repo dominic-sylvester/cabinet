@@ -7,11 +7,11 @@ import {
 } from "../provider-cli";
 import { getNvmNodeBin } from "../nvm-path";
 
-// Effort levels per Claude Code docs: Fable 5, Opus 4.8/4.7, and Sonnet 5 all
-// support the full ladder including the `xhigh` rung. (Sonnet 4.6 stopped at
-// `max` with no `xhigh`, but it's no longer offered here.) Setting an
-// unsupported level falls back to the highest the model accepts, but we
-// surface the right list so the picker doesn't show levels that won't apply.
+// Effort levels per Claude Code docs (verified 2026-11-13): Fable models and
+// Opus 5.5 / Sonnet 5.5 / Haiku 5.5 all carry the full `low`..`max` ladder,
+// including the `xhigh` rung. Setting an unsupported level falls back to the
+// highest the model accepts, but we surface the right list so the picker
+// doesn't show levels that won't apply.
 const EFFORT_LEVELS_WITH_XHIGH = [
   { id: "low", name: "Low", description: "Quick, minimal reasoning" },
   { id: "medium", name: "Medium", description: "Balanced depth" },
@@ -38,50 +38,48 @@ export const claudeCodeProvider: AgentProvider = {
     { title: "Verify login", detail: "Check that you're logged in:", command: "claude auth status" },
     { title: "Verify setup", detail: "Confirm headless mode works:", command: "claude -p 'Reply with exactly OK' --output-format text" },
   ],
+  // Aliases, not pinned version ids: Claude Code resolves them per provider and
+  // keeps them current, so this list needs refreshing only when the alias set
+  // itself changes. Anthropic API resolution verified 2026-11-13 against
+  // https://code.claude.com/docs/en/model-config — opus→Opus 5.5,
+  // sonnet→Sonnet 5.5, haiku→Haiku 5.5, fable→Fable 5.2. The `opus[1m]` /
+  // `sonnet[1m]` aliases are gone from this list on purpose: both are native-1M
+  // models now, so the bracket form is a documented no-op.
   models: [
     {
       id: "fable",
-      name: "Claude Fable 5",
-      description: "Most powerful model, above Opus, with configurable effort",
+      name: "Claude Fable 5.2",
+      description: "Most capable model, for the hardest and longest-running tasks",
       effortLevels: [...EFFORT_LEVELS_WITH_XHIGH],
     },
     {
       id: "opus",
-      name: "Claude Opus 4.8",
-      description: "Most intelligent Opus with configurable effort",
-      effortLevels: [...EFFORT_LEVELS_WITH_XHIGH],
-    },
-    {
-      id: "opus[1m]",
-      name: "Claude Opus 4.8 (1M context)",
-      description: "Opus 4.8 with 1M-token context for very long sessions",
+      name: "Claude Opus 5.5",
+      description: "Most intelligent Opus with configurable effort (1M context native)",
       effortLevels: [...EFFORT_LEVELS_WITH_XHIGH],
     },
     {
       id: "sonnet",
-      name: "Claude Sonnet 5",
-      description: "Fast and capable with configurable effort",
+      name: "Claude Sonnet 5.5",
+      description: "Fast and capable with configurable effort (1M context native)",
       effortLevels: [...EFFORT_LEVELS_WITH_XHIGH],
     },
     {
-      id: "sonnet[1m]",
-      name: "Claude Sonnet 5 (1M context)",
-      description: "Sonnet 5 with 1M-token context for very long sessions",
+      id: "haiku",
+      name: "Claude Haiku 5.5",
+      description: "Fastest responses, still configurable effort",
       effortLevels: [...EFFORT_LEVELS_WITH_XHIGH],
     },
     {
       id: "opusplan",
       name: "Opus + Sonnet (opusplan)",
-      description: "Opus during plan mode, Sonnet for execution",
+      description: "Opus 5.5 during plan mode, Sonnet 5.5 for execution",
       effortLevels: [...EFFORT_LEVELS_WITH_XHIGH],
     },
-    {
-      id: "haiku",
-      name: "Claude Haiku 4.5",
-      description: "Fastest responses",
-      effortLevels: [],
-    },
   ],
+  // Version floors for those resolutions: Opus 5.5 needs v2.1.280+, Sonnet 5.5
+  // v2.1.284+, Haiku 5.5 v2.1.293+ (older CLIs error on the request, so keep
+  // `claude update` current).
   detachedPromptLaunchMode: "session",
   supportsTerminalResume: true,
   effortLevels: [...EFFORT_LEVELS_WITH_XHIGH],

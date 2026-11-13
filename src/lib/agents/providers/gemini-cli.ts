@@ -89,9 +89,21 @@ export const geminiCliProvider: AgentProvider = {
     },
   ],
   detachedPromptLaunchMode: "one-shot",
-  // Gemini 3 Pro Preview was deprecated 2026-03-09 — `gemini-3.1-pro-preview`
-  // is the active flagship preview. Verified against Gemini CLI docs and
-  // Google's model docs on 2026-05-03.
+  // Static on purpose: Gemini CLI exposes no model-listing command (the
+  // `gemini models` / `--list-models` flag exists only as an unmerged upstream
+  // PR), so there is nothing for `listModels()` to shell.
+  //
+  // Provenance, refreshed 2026-11-13: `gemini-3.1-pro-preview` replaced the
+  // deprecated `gemini-3-pro-preview` (2026-03-09); the `/model` docs list
+  // `gemini-3-pro-preview`/`gemini-3-flash-preview` (Auto, Gemini 3) and
+  // `gemini-2.5-pro`/`gemini-2.5-flash` (Auto, 2.5) — https://geminicli.com/docs/cli/model
+  // — and "Manual: any available model" is what the ids below lean on.
+  //
+  // Caveat worth knowing before investing here: Gemini CLI was replaced by
+  // Antigravity CLI for unpaid-tier and Google One users on 2026-06-18, and it
+  // is not optimized for Gemini 4 (Carbon/Argon/Hydrogen). Gemini API model
+  // codes (gemini-4-carbon, gemini-3.8-flash, ...) are therefore deliberately
+  // NOT mirrored into this CLI provider.
   models: [
     {
       id: "gemini-3.1-pro-preview",

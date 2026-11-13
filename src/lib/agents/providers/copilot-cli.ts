@@ -5,10 +5,17 @@ import {
   resolveCliCommand,
 } from "../provider-cli";
 
-// Copilot CLI's `--model` accepts whatever the user's plan exposes via
-// `/model` in the TUI. Verified 2026-05-03 against GitHub's supported-models
-// docs; "auto" was added 2026-04-17 and routes across GPT-5.x, Sonnet 4.6,
-// Haiku 4.5 based on plan + policy.
+// Copilot CLI's `--model` accepts only what the user's plan exposes, and the
+// CLI has no listing command (`copilot models` is not a subcommand; an invalid
+// `--model` errors without printing the valid set). So this stays static — but
+// it is a *validated* set, not a guess: every id below was run through
+// `copilot -p "reply OK" --model <id>` on 2026-11-13 (CLI 1.0.87) and answered,
+// while the rest of the docs catalog answered "Model … is not available"
+// (no Opus/Fable/GPT-6-flagship entitlement on this plan). Names come from
+// https://docs.github.com/copilot/reference/ai-models/supported-models.
+// Entitlements are per-account, so re-validate rather than trusting the docs
+// list wholesale — and don't badge these with `requires`, which models the
+// ChatGPT/API-key split Codex has and Copilot does not.
 const COPILOT_MODELS = [
   {
     id: "auto",
@@ -16,44 +23,74 @@ const COPILOT_MODELS = [
     description: "Copilot picks the best model for each turn based on your plan",
   },
   {
-    id: "gpt-5.5",
-    name: "GPT-5.5 (via Copilot)",
-    description: "OpenAI's strongest coding model routed through Copilot",
-  },
-  {
-    id: "gpt-5.4",
-    name: "GPT-5.4 (via Copilot)",
-    description: "Previous OpenAI flagship routed through Copilot",
-  },
-  {
     id: "gpt-5.3-codex",
-    name: "GPT-5.3 Codex (via Copilot)",
-    description: "Codex-tuned OpenAI model routed through Copilot",
+    name: "GPT-5.3 Codex",
+    description: "Codex-tuned OpenAI model (Copilot's long-term support default)",
   },
   {
-    id: "claude-opus-4.7",
-    name: "Claude Opus 4.7 (via Copilot)",
-    description: "Anthropic's most intelligent model routed through Copilot",
+    id: "gpt-6.1-terra",
+    name: "GPT-6.1 Terra",
+    description: "OpenAI GPT-6.1 flagship, Terra variant",
   },
   {
-    id: "claude-sonnet-4.6",
-    name: "Claude Sonnet 4.6 (via Copilot)",
-    description: "Anthropic Sonnet routed through Copilot",
+    id: "gpt-6-luna",
+    name: "GPT-6 Luna",
+    description: "Fast, lower-cost GPT-6 variant",
+  },
+  {
+    id: "gpt-5.6-terra",
+    name: "GPT-5.6 Terra",
+    description: "Previous-generation GPT-5.6 flagship",
+  },
+  {
+    id: "gpt-5.6-luna",
+    name: "GPT-5.6 Luna",
+    description: "Fast, lower-cost GPT-5.6 variant",
+  },
+  {
+    id: "claude-sonnet-5.5",
+    name: "Claude Sonnet 5.5",
+    description: "Anthropic Sonnet, newest version",
+  },
+  {
+    id: "claude-sonnet-5",
+    name: "Claude Sonnet 5",
+    description: "Anthropic Sonnet 5",
+  },
+  {
+    id: "claude-haiku-5.5",
+    name: "Claude Haiku 5.5",
+    description: "Fast Anthropic Haiku, newest version",
   },
   {
     id: "claude-haiku-4.5",
-    name: "Claude Haiku 4.5 (via Copilot)",
-    description: "Fast Anthropic model routed through Copilot",
+    name: "Claude Haiku 4.5",
+    description: "Fast Anthropic Haiku 4.5",
   },
   {
-    id: "gemini-3.1-pro",
-    name: "Gemini 3.1 Pro (via Copilot)",
-    description: "Google's flagship Gemini routed through Copilot",
+    id: "gemini-3.8-flash",
+    name: "Gemini 3.8 Flash",
+    description: "Fast Google model for agentic and enterprise workflows",
   },
   {
-    id: "gemini-3-flash",
-    name: "Gemini 3 Flash (via Copilot)",
-    description: "Fast Google model routed through Copilot",
+    id: "grok-4.7",
+    name: "Grok 4.7",
+    description: "xAI's newest Grok",
+  },
+  {
+    id: "grok-4.6",
+    name: "Grok 4.6",
+    description: "Previous xAI Grok",
+  },
+  {
+    id: "kimi-k3",
+    name: "Kimi K3",
+    description: "Moonshot AI's Kimi K3",
+  },
+  {
+    id: "mai-code-1.1-flash",
+    name: "MAI-Code-1.1-Flash",
+    description: "Microsoft's code-focused Flash model",
   },
 ] as const;
 
