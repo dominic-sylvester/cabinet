@@ -1,7 +1,11 @@
 import fs from "fs";
 import os from "os";
 import path from "path";
-import type { AgentProvider, ProviderStatus } from "../provider-interface";
+import type {
+  AgentProvider,
+  ProviderModel,
+  ProviderStatus,
+} from "../provider-interface";
 import {
   checkCliProviderAvailable,
   execCli,
@@ -51,6 +55,46 @@ const GROK_MODELS = [
     description: "Fast code-focused Grok model for agentic coding",
   },
 ] as const;
+
+/**
+ * Pure parser for `grok models` stdout:
+ *
+ *   You are not authenticated.
+ *
+ *   Default model: grok-4.7
+ *
+ *   Available models:
+ *     * grok-4.7 (default)
+ *     - grok-4.7-build-fast
+ *
+ * Only the `Available models:` section holds models — the auth banner and the
+ * `Default model:` line are not. The starred row is the CLI's default; grok
+ * reports no display names, so the id doubles as the name (same as OpenCode).
+ */
+export function parseGrokModels(stdout: string | null | undefined): ProviderModel[] {
+  const text = stdout || "";
+  const header = "Available models:";
+  const at = text.indexOf(header);
+  if (at === -1) return [];
+
+  const models: ProviderModel[] = [];
+  const seen = new Set<string>();
+  for (const raw of text.slice(at + header.length).split(/\r?\n/)) {
+    const match = /^\s*[*+-]\s+(\S+)(?:\s+\(default\))?\s*$/.exec(raw);
+    if (!match) continue;
+    const id = match[1];
+    if (seen.has(id)) continue;
+    seen.add(id);
+    const isDefault = raw.includes("(default)");
+    models.push({
+      id,
+      name: id,
+      ...(isDefault ? { description: "CLI default" } : {}),
+      effortLevels: [],
+    });
+  }
+  return models;
+}
 
 export const grokCliProvider: AgentProvider = {
   id: "grok-cli",
@@ -118,6 +162,19 @@ export const grokCliProvider: AgentProvider = {
       command: this.command || "grok",
       args,
     };
+  },
+
+  // Live discovery: `grok models` prints the catalog even before sign-in, so
+  // the picker follows xAI's releases (grok-4.7 shipped after this app build).
+  // Throws on a genuine CLI failure so the models API route can fall back.
+  async listModels(): Promise<ProviderModel[]> {
+    const command = resolveCliCommand(this);
+    const stdout = await execCli(command, ["models"], { timeout: 20_000 });
+    const models = parseGrokModels(stdout);
+    if (models.length === 0) {
+      throw new Error("grok models returned no models");
+    }
+    return models;
   },
 
   async isAvailable(): Promise<boolean> {

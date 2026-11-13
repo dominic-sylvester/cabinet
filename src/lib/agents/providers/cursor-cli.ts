@@ -1,4 +1,8 @@
-import type { AgentProvider, ProviderStatus } from "../provider-interface";
+import type {
+  AgentProvider,
+  ProviderModel,
+  ProviderStatus,
+} from "../provider-interface";
 import {
   checkCliProviderAvailable,
   execCli,
@@ -23,6 +27,34 @@ const CURSOR_MODEL_IDS = [
   { id: "gemini-3-flash", name: "Gemini 3 Flash" },
   { id: "grok-4", name: "Grok 4" },
 ] as const;
+
+/**
+ * Pure parser for `cursor-agent --list-models` stdout:
+ *
+ *   Available models
+ *
+ *   auto - Auto (default)
+ *   gpt-5.3-codex-low - Codex 5.3 Low
+ *
+ * Cursor resolves this catalog per account and revs it with its own releases,
+ * so the ids drift from anything we hardcode. Lines without the `id - Name`
+ * separator (the header, blanks) are dropped.
+ */
+export function parseCursorModels(stdout: string | null | undefined): ProviderModel[] {
+  const models: ProviderModel[] = [];
+  const seen = new Set<string>();
+  for (const raw of (stdout || "").split(/\r?\n/)) {
+    const line = raw.trim();
+    const separator = line.indexOf(" - ");
+    if (separator <= 0) continue;
+    const id = line.slice(0, separator).trim();
+    const name = line.slice(separator + 3).trim();
+    if (!id || /\s/.test(id) || seen.has(id)) continue;
+    seen.add(id);
+    models.push({ id, name: name || id, effortLevels: [] });
+  }
+  return models;
+}
 
 export const cursorCliProvider: AgentProvider = {
   id: "cursor-cli",
@@ -88,6 +120,19 @@ export const cursorCliProvider: AgentProvider = {
       command: this.command || "cursor-agent",
       args,
     };
+  },
+
+  // Live discovery: Cursor ships a per-account multi-vendor catalog and
+  // `--list-models` prints it without running a prompt. Throws on a genuine
+  // CLI failure so the models API route can serve the static fallback.
+  async listModels(): Promise<ProviderModel[]> {
+    const command = resolveCliCommand(this);
+    const stdout = await execCli(command, ["--list-models"], { timeout: 20_000 });
+    const models = parseCursorModels(stdout);
+    if (models.length === 0) {
+      throw new Error("cursor-agent --list-models returned no models");
+    }
+    return models;
   },
 
   async isAvailable(): Promise<boolean> {
