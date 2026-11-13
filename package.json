@@ -22,6 +22,7 @@
     "electron:package": "npm run build && npm run electron:prep && electron-forge package",
     "electron:package:win": "npm run build && npm run electron:prep -- --platform=win32 && electron-forge package --platform win32",
     "electron:make": "npm run build && npm run electron:prep && electron-forge make",
+    "electron:dmg": "npm run build && npm run electron:prep && electron-forge make --platform darwin --arch=arm64",
     "electron:make:win": "npm run build && npm run electron:prep -- --platform=win32 && electron-forge make --platform win32",
     "lint": "eslint src server electron scripts test e2e eslint.config.mjs next.config.ts playwright.config.ts",
     "skills:sync": "tsx scripts/skills-sync.ts",
