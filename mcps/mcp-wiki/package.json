@@ -1,0 +1,43 @@
+{
+  "name": "cabinet-mcp-wiki",
+  "version": "0.1.0",
+  "description": "Cabinet-maintained, read-only MCP server over the raw-wiki DuckDB index.",
+  "license": "MIT",
+  "type": "module",
+  "main": "dist/index.js",
+  "bin": {
+    "cabinet-mcp-wiki": "dist/index.js"
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "build": "node esbuild.config.mjs",
+    "dev": "node esbuild.config.mjs --watch",
+    "typecheck": "tsc --noEmit",
+    "smoke": "npm run build && node scripts/smoke.mjs",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "duckdb",
+    "wiki",
+    "cabinet",
+    "knowledge"
+  ],
+  "dependencies": {
+    "@duckdb/node-api": "2.0.0-r.1",
+    "@modelcontextprotocol/sdk": "^1.27.1",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@types/node": "^22",
+    "esbuild": "^0.24.0",
+    "typescript": "^5"
+  }
+}
