@@ -21,12 +21,55 @@ export interface ThemeDefinition {
   label: string;
   type: "dark" | "light";
   font?: string; // Google Font for body text
-  headingFont?: string; // Google Font for headings (h1-h4)
+  headingFont?: string; // Google Font for interface headings (h1-h4)
+  documentFont?: string; // Reading titles can differ from interface headings
   accent: string; // preview color for the picker
   vars: Record<string, string>;
 }
 
+export const DEFAULT_THEME_PAIR = { light: "paper", dark: "cabinet-dark" } as const;
+
 export const THEMES: ThemeDefinition[] = [
+  {
+    name: "cabinet-dark",
+    label: "Cabinet Dark",
+    type: "dark",
+    font: "var(--font-sans)",
+    headingFont: "var(--font-sans)",
+    documentFont: "var(--font-reading), Georgia, serif",
+    accent: "#90a8ff",
+    vars: {
+      "--background": "#242830",
+      "--foreground": "#eceeea",
+      "--card": "#242830",
+      "--card-foreground": "#eceeea",
+      "--popover": "#2b3039",
+      "--popover-foreground": "#eceeea",
+      "--primary": "#90a8ff",
+      "--primary-foreground": "#17234c",
+      "--primary-hover": "#adc0ff",
+      "--secondary": "#2d323a",
+      "--secondary-foreground": "#eceeea",
+      "--muted": "#2d323a",
+      "--muted-foreground": "#a5aeb9",
+      "--accent": "#2d323a",
+      "--accent-foreground": "#eceeea",
+      "--destructive": "#f1a0a5",
+      "--border": "#3b4049",
+      "--input": "#707b8b",
+      "--ring": "#90a8ff",
+      "--selection": "#303e62",
+      "--selection-foreground": "#c1ceff",
+      "--sidebar": "#191c21",
+      "--sidebar-foreground": "#eceeea",
+      "--sidebar-primary": "#90a8ff",
+      "--sidebar-primary-foreground": "#17234c",
+      "--sidebar-accent": "#303e62",
+      "--sidebar-accent-foreground": "#c1ceff",
+      "--sidebar-border": "#30343b",
+      "--sidebar-ring": "#90a8ff"
+    },
+  },
   // ─── CLAUDE THEME (signature) ───
   {
     name: "claude",
@@ -321,50 +364,43 @@ export const THEMES: ThemeDefinition[] = [
 
   // ─── LIGHT THEMES ───
   {
-    // Warm parchment palette derived from runcabinet.com
-    // #FAF6F1 bg · #F3EDE4 bg-warm · #3B2F2F text · #8B5E3C accent · #E8DDD0 border
     name: "paper",
     label: "Cabinet",
     type: "light",
-    font: "'Inter', var(--font-sans)",
-    headingFont: "'Source Serif 4', 'Instrument Serif', Georgia, serif",
-    accent: "#8B5E3C",
+    font: "var(--font-sans)",
+    headingFont: "var(--font-sans)",
+    documentFont: "var(--font-reading), Georgia, serif",
+    accent: "#3157c8",
     vars: {
-      "--background":           "oklch(0.974 0.005 60)",   // #FAF6F1
-      "--foreground":           "oklch(0.22 0.018 28)",    // #3B2F2F
-      "--card":                 "oklch(1 0 0)",             // #FFFFFF
-      "--card-foreground":      "oklch(0.22 0.018 28)",    // #3B2F2F
-      "--popover":              "oklch(1 0 0)",             // #FFFFFF
-      "--popover-foreground":   "oklch(0.22 0.018 28)",    // #3B2F2F
-      "--primary":              "oklch(0.47 0.09 48)",     // #8B5E3C
-      "--primary-foreground":   "oklch(1 0 0)",            // #FFFFFF
-      "--secondary":            "oklch(0.92 0.026 56)",    // #F5E6D3 accent-bg
-      "--secondary-foreground": "oklch(0.22 0.018 28)",    // #3B2F2F
-      "--muted":                "oklch(0.961 0.014 58)",   // #FAF2EA accent-bg-subtle
-      "--muted-foreground":     "oklch(0.64 0.025 50)",    // #A89888
-      "--accent":               "oklch(0.946 0.010 60)",   // #F3EDE4 bg-warm
-      "--accent-foreground":    "oklch(0.22 0.018 28)",    // #3B2F2F
-      "--destructive":          "oklch(0.55 0.22 25)",
-      "--border":               "oklch(0.882 0.016 56)",   // #E8DDD0
-      "--input":                "oklch(0.882 0.016 56)",   // #E8DDD0
-      // Audit #054: focus rings against the warm parchment background were
-      // calculated at ~2.6:1 contrast — under WCAG 2.4.7 (3:1 for non-text
-      // UI). Push L 0.47 → 0.34 (deeper rust, same hue) to clear 4:1.
-      "--ring":                 "oklch(0.34 0.09 48)",     // deeper #6B4A2D for visibility
-      // Manila Arc: the sidebar rail merges into the desk gutter (same warm
-      // manila) so the bright content sheet reads as the one elevated surface.
-      // This value MUST equal --gutter (globals.css, keyed on
-      // data-custom-theme="paper") or a tonal seam appears between rail and
-      // desk (#088). The gutter lives there — NOT here — because an inline
-      // theme var sticks when you switch to a theme that doesn't redefine it.
-      "--sidebar":              "oklch(0.925 0.026 79)",   // rail == desk (== --gutter)
-      "--sidebar-foreground":   "oklch(0.22 0.018 28)",    // #3B2F2F
-      "--sidebar-primary":      "oklch(0.47 0.09 48)",     // #8B5E3C
-      "--sidebar-primary-foreground": "oklch(1 0 0)",      // #FFFFFF
-      "--sidebar-accent":       "oklch(0.92 0.026 56)",    // #F5E6D3
-      "--sidebar-accent-foreground":  "oklch(0.22 0.018 28)", // #3B2F2F
-      "--sidebar-border":       "oklch(0.882 0.016 56)",   // #E8DDD0
-      "--sidebar-ring":         "oklch(0.34 0.09 48)",     // matches --ring
+      "--background": "#fffefb",
+      "--foreground": "#252a30",
+      "--card": "#fffefb",
+      "--card-foreground": "#252a30",
+      "--popover": "#ffffff",
+      "--popover-foreground": "#252a30",
+      "--primary": "#3157c8",
+      "--primary-foreground": "#ffffff",
+      "--primary-hover": "#2445ae",
+      "--secondary": "#f3f1ec",
+      "--secondary-foreground": "#252a30",
+      "--muted": "#f3f1ec",
+      "--muted-foreground": "#626b75",
+      "--accent": "#f3f1ec",
+      "--accent-foreground": "#252a30",
+      "--destructive": "#b23f42",
+      "--border": "#dedfdc",
+      "--input": "#858e99",
+      "--ring": "#3157c8",
+      "--selection": "#e8edfc",
+      "--selection-foreground": "#2446a9",
+      "--sidebar": "#e9e5dd",
+      "--sidebar-foreground": "#252a30",
+      "--sidebar-primary": "#3157c8",
+      "--sidebar-primary-foreground": "#ffffff",
+      "--sidebar-accent": "#e8edfc",
+      "--sidebar-accent-foreground": "#2446a9",
+      "--sidebar-border": "#d6d3cc",
+      "--sidebar-ring": "#3157c8"
     },
   },
   {
@@ -759,6 +795,7 @@ function loadThemeFonts(theme: ThemeDefinition | null) {
           [
             extractGoogleFontFamily(theme.font),
             extractGoogleFontFamily(theme.headingFont),
+            extractGoogleFontFamily(theme.documentFont),
           ].filter((f): f is string => !!f)
         )
       )
@@ -785,42 +822,28 @@ function loadThemeFonts(theme: ThemeDefinition | null) {
 // Apply a custom theme by setting CSS variables on the root element
 export function applyTheme(theme: ThemeDefinition | null) {
   const root = document.documentElement;
+  const variableNames = new Set(THEMES.flatMap((definition) => Object.keys(definition.vars)));
+  variableNames.forEach((key) => root.style.removeProperty(key));
+  root.style.removeProperty("--font-theme");
+  root.style.removeProperty("--font-heading-theme");
+  root.style.removeProperty("--font-document-theme");
 
   if (!theme) {
-    // Reset to default (remove custom vars, let .dark/:root handle it)
     root.removeAttribute("data-custom-theme");
-    root.style.removeProperty("--font-theme");
-    root.style.removeProperty("--font-heading-theme");
-    if (THEMES[0]) {
-      Object.keys(THEMES[0].vars).forEach((key) => {
-        root.style.removeProperty(key);
-      });
-    }
     loadThemeFonts(null);
     return;
   }
 
-  // Set the dark/light class
   root.classList.toggle("dark", theme.type === "dark");
-
-  // Apply CSS variables
   Object.entries(theme.vars).forEach(([key, value]) => {
     root.style.setProperty(key, value);
   });
-
-  // Apply fonts
-  if (theme.font) {
-    root.style.setProperty("--font-theme", theme.font);
-  } else {
-    root.style.removeProperty("--font-theme");
-  }
-
-  if (theme.headingFont) {
-    root.style.setProperty("--font-heading-theme", theme.headingFont);
-  } else {
-    root.style.removeProperty("--font-heading-theme");
-  }
-
+  if (theme.font) root.style.setProperty("--font-theme", theme.font);
+  if (theme.headingFont) root.style.setProperty("--font-heading-theme", theme.headingFont);
+  root.style.setProperty(
+    "--font-document-theme",
+    theme.documentFont || theme.headingFont || theme.font || "var(--font-reading), Georgia, serif"
+  );
   root.setAttribute("data-custom-theme", theme.name);
   loadThemeFonts(theme);
 }
@@ -864,11 +887,12 @@ export function storeThemeMode(mode: ThemeMode) {
 }
 
 export function getStoredThemePair(): { light: string; dark: string } {
-  const defaults = { light: "paper", dark: "claude" };
-  if (typeof window === "undefined") return defaults;
+  if (typeof window === "undefined") return { ...DEFAULT_THEME_PAIR };
+  const light = localStorage.getItem(THEME_LIGHT_KEY);
+  const dark = localStorage.getItem(THEME_DARK_KEY);
   return {
-    light: localStorage.getItem(THEME_LIGHT_KEY) || defaults.light,
-    dark: localStorage.getItem(THEME_DARK_KEY) || defaults.dark,
+    light: light && findThemeByName(light)?.type === "light" ? light : DEFAULT_THEME_PAIR.light,
+    dark: dark && findThemeByName(dark)?.type === "dark" ? dark : DEFAULT_THEME_PAIR.dark,
   };
 }
 
@@ -890,12 +914,16 @@ export function findThemeByName(name: string): ThemeDefinition | null {
  */
 export function resolveActiveTheme(): ThemeDefinition | null {
   if (typeof window === "undefined") return null;
-  const mode = getStoredThemeMode();
-  if (mode === "system") {
+  if (getStoredThemeMode() === "system") {
     const isDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
     const pair = getStoredThemePair();
     return findThemeByName(isDark ? pair.dark : pair.light);
   }
   const stored = getStoredThemeName();
-  return stored ? findThemeByName(stored) : null;
+  const selected = stored ? findThemeByName(stored) : null;
+  if (selected) return selected;
+  const mode = localStorage.getItem("theme");
+  const dark = mode === "dark" ||
+    (mode === "system" && window.matchMedia("(prefers-color-scheme: dark)").matches);
+  return findThemeByName(dark ? DEFAULT_THEME_PAIR.dark : DEFAULT_THEME_PAIR.light);
 }

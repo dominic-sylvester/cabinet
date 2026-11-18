@@ -371,7 +371,7 @@ export function PendingActionsPanel({
     <div className="my-4 overflow-hidden rounded-xl border border-border bg-muted/10">
       <header className="flex items-center justify-between gap-2 border-b border-border bg-muted/40 px-3 py-2">
         <div className="flex items-center gap-2">
-          <ShieldAlert className="size-3.5 text-amber-400" />
+          <ShieldAlert className="size-3.5 text-status-warning" />
           <h3 className="text-[12px] font-semibold">
             {pending.length > 0
               ? `Agent proposed ${pending.length} action${pending.length === 1 ? "" : "s"}`
@@ -399,7 +399,7 @@ export function PendingActionsPanel({
             <Button
               variant="ghost"
               size="sm"
-              className="h-7 gap-1 px-2 text-[11px] text-rose-400 hover:bg-rose-500/10 hover:text-rose-300"
+              className="h-7 gap-1 px-2 text-[11px] text-status-danger hover:bg-status-danger-bg hover:text-status-danger"
               disabled={submitting !== null || pending.length === 0}
               onClick={() =>
                 void submit(
@@ -442,7 +442,7 @@ export function PendingActionsPanel({
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="h-7 gap-1 px-2 text-[11px] text-rose-400 hover:bg-rose-500/10 hover:text-rose-300"
+                  className="h-7 gap-1 px-2 text-[11px] text-status-danger hover:bg-status-danger-bg hover:text-status-danger"
                   disabled={submitting !== null}
                   onClick={() => void submit("reject", rejectIds)}
                 >
@@ -469,7 +469,7 @@ export function PendingActionsPanel({
       </header>
 
       {blockedByDispatcher && (
-        <div className="border-b border-border bg-rose-500/10 px-3 py-2 text-[11.5px] text-rose-400">
+        <div className="border-b border-border bg-status-danger-bg px-3 py-2 text-[11.5px] text-status-danger">
           This agent does not have permission to assign tasks. Enable <em>Can
           assign tasks to other team members</em> on its agent page to let it
           dispatch work.
@@ -477,7 +477,7 @@ export function PendingActionsPanel({
       )}
 
       {error && (
-        <div className="border-b border-border bg-rose-500/10 px-3 py-2 text-[11.5px] text-rose-400">
+        <div className="border-b border-border bg-status-danger-bg px-3 py-2 text-[11.5px] text-status-danger">
           {error}
         </div>
       )}
@@ -526,8 +526,8 @@ export function PendingActionsPanel({
                       {item.warnings.map((warning, wi) => {
                         const tone =
                           warning.severity === "hard"
-                            ? "bg-rose-500/15 text-rose-400 border-rose-500/25"
-                            : "bg-amber-500/15 text-amber-400 border-amber-500/25";
+                            ? "bg-status-danger-bg text-status-danger border-status-danger/25"
+                            : "bg-status-warning-bg text-status-warning border-status-warning/25";
                         return (
                           <span
                             key={wi}
@@ -577,7 +577,7 @@ export function PendingActionsPanel({
           {dispatched.slice(-20).map((entry) => {
             const tone =
               entry.status === "dispatched"
-                ? "text-emerald-400"
+                ? "text-status-success"
                 : "text-muted-foreground line-through";
             return (
               <li

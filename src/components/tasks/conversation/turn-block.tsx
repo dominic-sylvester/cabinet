@@ -267,7 +267,7 @@ export function TurnBlock({
           </>
         ) : null}
         {turn.awaitingInput ? (
-          <span className="ml-1 inline-flex items-center gap-1 rounded-full bg-amber-500/15 px-2 py-0.5 text-[10px] font-medium text-amber-700 dark:text-amber-400">
+          <span className="ml-1 inline-flex items-center gap-1 rounded-full bg-status-warning-bg px-2 py-0.5 text-[10px] font-medium text-status-warning">
             <Pause className="size-2.5" /> awaiting input
           </span>
         ) : null}

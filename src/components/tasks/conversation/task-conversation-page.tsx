@@ -48,6 +48,7 @@ import {
 import { openArtifactPath } from "@/lib/navigation/open-artifact-path";
 import { buildTaskPath } from "@/lib/navigation/task-route";
 import { cn } from "@/lib/utils";
+import { StatusBadge as SemanticStatusBadge, type StatusTone } from "@/components/ui/status-badge";
 import { Button } from "@/components/ui/button";
 import { FolderTabs } from "@/components/layout/folder-tabs";
 import { TurnBlock, type TurnBlockAgent } from "./turn-block";
@@ -177,46 +178,35 @@ function applyTerminalPayloadToTask(
 
 const STATUS_META: Record<
   TaskStatus,
-  { label: string; tone: string; icon: React.ComponentType<{ className?: string }> }
+  { label: string; tone: StatusTone; icon: React.ComponentType<{ className?: string }> }
 > = {
-  idle: { label: "Idle", tone: "bg-muted text-muted-foreground", icon: Circle },
+  idle: { label: "Idle", tone: "neutral", icon: Circle },
   running: {
     label: "Running",
-    tone: "bg-sky-500/15 text-sky-700 dark:text-sky-400",
+    tone: "running",
     icon: Play,
   },
   "awaiting-input": {
     label: "Awaiting input",
-    tone: "bg-amber-500/15 text-amber-700 dark:text-amber-400",
+    tone: "warning",
     icon: Pause,
   },
   done: {
     label: "Done",
-    tone: "bg-emerald-500/15 text-emerald-700 dark:text-emerald-400",
+    tone: "success",
     icon: CheckCircle2,
   },
   failed: {
     label: "Failed",
-    tone: "bg-red-500/15 text-red-700 dark:text-red-400",
+    tone: "danger",
     icon: CircleAlert,
   },
-  archived: { label: "Archived", tone: "bg-muted text-muted-foreground", icon: Archive },
+  archived: { label: "Archived", tone: "neutral", icon: Archive },
 };
 
 function StatusBadge({ status }: { status: TaskStatus }) {
   const meta = STATUS_META[status];
-  const Icon = meta.icon;
-  return (
-    <span
-      className={cn(
-        "inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-[11px] font-medium",
-        meta.tone
-      )}
-    >
-      <Icon className="size-3" />
-      {meta.label}
-    </span>
-  );
+  return <SemanticStatusBadge tone={meta.tone} icon={meta.icon}>{meta.label}</SemanticStatusBadge>;
 }
 
 /**
@@ -244,7 +234,7 @@ function StatusActionButton({
   const { t } = useLocale();
   if (status === "done") {
     return (
-      <span className="inline-flex h-8 items-center gap-1.5 rounded-md bg-emerald-500/15 px-2.5 text-[12px] font-semibold text-emerald-700 dark:text-emerald-300">
+      <span className="inline-flex h-8 items-center gap-1.5 rounded-md bg-status-success-bg px-2.5 text-[12px] font-semibold text-status-success">
         <CheckCircle2 className="size-4" />
         Done
       </span>
@@ -257,7 +247,7 @@ function StatusActionButton({
         type="button"
         disabled={busy}
         onClick={onRetry}
-        className="inline-flex h-8 items-center gap-1.5 rounded-md bg-rose-500/15 px-2.5 text-[12px] font-semibold text-rose-700 dark:text-rose-300 transition-colors hover:bg-rose-500/25 hover:text-rose-800 dark:hover:text-rose-200 disabled:opacity-50"
+        className="inline-flex h-8 items-center gap-1.5 rounded-md bg-status-danger-bg px-2.5 text-[12px] font-semibold text-status-danger transition-colors hover:bg-status-danger/20 disabled:opacity-50"
         title={t("tasks:conversation.restartFromOriginal")}
       >
         <RotateCcw className="size-4" />
@@ -268,7 +258,7 @@ function StatusActionButton({
 
   if (status === "running") {
     return (
-      <span className="inline-flex h-8 items-center gap-1.5 rounded-md bg-sky-500/15 px-2.5 text-[12px] font-semibold text-sky-700 dark:text-sky-300">
+      <span className="inline-flex h-8 items-center gap-1.5 rounded-md bg-status-running-bg px-2.5 text-[12px] font-semibold text-status-running">
         <Loader2 className="size-4 animate-spin" />
         Running
       </span>
@@ -277,7 +267,7 @@ function StatusActionButton({
 
   if (status === "awaiting-input") {
     return (
-      <span className="inline-flex h-8 items-center gap-1.5 rounded-md bg-amber-500/15 px-2.5 text-[12px] font-semibold text-amber-700 dark:text-amber-300">
+      <span className="inline-flex h-8 items-center gap-1.5 rounded-md bg-status-warning-bg px-2.5 text-[12px] font-semibold text-status-warning">
         <Pause className="size-4" />
         Waiting
       </span>
@@ -298,7 +288,7 @@ function StatusActionButton({
       type="button"
       disabled={busy}
       onClick={onMarkDone}
-      className="inline-flex h-8 items-center gap-1.5 rounded-md bg-emerald-500/15 px-2.5 text-[12px] font-semibold text-emerald-700 dark:text-emerald-300 transition-colors hover:bg-emerald-500/25 hover:text-emerald-800 dark:hover:text-emerald-200 disabled:opacity-50"
+      className="inline-flex h-8 items-center gap-1.5 rounded-md bg-status-success-bg px-2.5 text-[12px] font-semibold text-status-success transition-colors hover:bg-status-success/20 disabled:opacity-50"
       title={t("tasks:conversation.markAsDone")}
     >
       <Check className="size-4" />
@@ -310,7 +300,7 @@ function StatusActionButton({
 function TokenBar({ used, window: ctxWindow }: { used: number; window: number }) {
   const pct = Math.min(100, (used / ctxWindow) * 100);
   const tone =
-    pct >= 95 ? "bg-red-500" : pct >= 80 ? "bg-amber-500" : "bg-foreground/70";
+    pct >= 95 ? "bg-status-danger" : pct >= 80 ? "bg-status-warning" : "bg-foreground/70";
   return (
     <div className="flex items-center gap-2">
       <div className="font-mono text-[11px] tabular-nums text-muted-foreground">
@@ -1830,7 +1820,7 @@ export function TaskConversationPage({
               {isTerminalMode && (
                 <span
                   title={t("tasks:conversation.ptyMode")}
-                  className="inline-flex items-center gap-1 rounded bg-emerald-500/15 px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wide text-emerald-600 dark:text-emerald-400"
+                  className="inline-flex items-center gap-1 rounded bg-status-success-bg px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wide text-emerald-600 dark:text-emerald-400"
                 >
                   <Terminal className="size-3" />
                   PTY
@@ -2276,7 +2266,7 @@ function TerminalPromptHeader({
               </span>
             )}
             {adapterType && (
-              <span className="rounded-full bg-emerald-500/15 px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wide text-emerald-400">
+              <span className="rounded-full bg-status-success-bg px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wide text-emerald-400">
                 PTY
               </span>
             )}

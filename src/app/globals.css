@@ -9,6 +9,35 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-surface-desk: var(--surface-desk);
+  --color-surface-sheet: var(--surface-sheet);
+  --color-surface-overlay: var(--surface-overlay);
+  --color-surface-subtle: var(--surface-subtle);
+  --color-surface-hover: var(--surface-hover);
+  --color-surface-pressed: var(--surface-pressed);
+  --color-ink-secondary: var(--text-secondary);
+  --color-primary-hover: var(--primary-hover);
+  --color-selection: var(--selection);
+  --color-selection-foreground: var(--selection-foreground);
+  --color-status-running: var(--status-running);
+  --color-status-running-bg: var(--status-running-bg);
+  --color-status-success: var(--status-success);
+  --color-status-success-bg: var(--status-success-bg);
+  --color-status-warning: var(--status-warning);
+  --color-status-warning-bg: var(--status-warning-bg);
+  --color-status-danger: var(--status-danger);
+  --color-status-danger-bg: var(--status-danger-bg);
+  --font-document: var(--font-document-theme, var(--font-reading)), Georgia, serif;
+  --text-ui: var(--font-size-ui);
+  --text-ui--line-height: 1.125rem;
+  --text-meta: var(--font-size-meta);
+  --text-meta--line-height: 1rem;
+  --text-label: var(--font-size-label);
+  --text-label--line-height: 1rem;
+  --text-reading: var(--font-size-reading);
+  --text-reading--line-height: 1.625rem;
+  --radius-control: 6px;
+  --radius-group: 10px;
   --font-sans: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
   --font-mono: var(--font-mono), ui-monospace, monospace;
   --font-serif: var(--font-logo-rtl), Cardo, Georgia, ui-serif, serif;
@@ -61,56 +90,93 @@
 }
 
 :root {
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
-  --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.4 0 0);
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
+  --background: #fffefb;
+  --foreground: #252a30;
+  --card: #fffefb;
+  --card-foreground: #252a30;
+  --popover: #ffffff;
+  --popover-foreground: #252a30;
+  --primary: #3157c8;
+  --primary-foreground: #ffffff;
+  --primary-hover: #2445ae;
+  --secondary: #f3f1ec;
+  --secondary-foreground: #252a30;
+  --muted: #f3f1ec;
+  --muted-foreground: #626b75;
+  --accent: #f3f1ec;
+  --accent-foreground: #252a30;
+  --destructive: #b23f42;
+  --border: #dedfdc;
+  --input: #858e99;
+  --ring: #3157c8;
+  --selection: #e8edfc;
+  --selection-foreground: #2446a9;
+  --sidebar: #e9e5dd;
+  --sidebar-foreground: #252a30;
+  --sidebar-primary: #3157c8;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #e8edfc;
+  --sidebar-accent-foreground: #2446a9;
+  --sidebar-border: #d6d3cc;
+  --sidebar-ring: #3157c8;
   --radius: 0.625rem;
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.205 0 0);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.4 0 0);
-  /* Manila Arc desk gutter + sheet lift (see @theme inline note). Default
-     gutter mixes 10% foreground into the sheet fill so even pure-white themes
-     (white/apple/winxp) show a real desk behind the sheet (#100); the paper
-     theme overrides --gutter with a warm manila. */
+  --radius-control: 6px;
+  --radius-group: 10px;
+  --radius-sheet: 18px;
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-12: 48px;
+  --control-height-compact: 28px;
+  --control-height: 32px;
+  --control-height-prominent: 40px;
+  --toolbar-height: 52px;
+  --row-height: 32px;
+  --sheet-inset: var(--space-3);
+  --reading-width: 48rem;
+  --font-size-ui: 0.8125rem;
+  --font-size-meta: 0.75rem;
+  --font-size-label: 0.6875rem;
+  --font-size-reading: 1rem;
+  --font-size-document-title: 2.25rem;
+  --motion-feedback: 120ms;
+  --motion-menu: 180ms;
+  --motion-drawer: 240ms;
+  --ease-drawer: cubic-bezier(0.22, 1, 0.36, 1);
+  --surface-desk: var(--gutter);
+  --surface-sheet: var(--background);
+  --surface-overlay: var(--popover);
+  --surface-subtle: var(--muted);
+  --surface-hover: var(--accent);
+  --surface-pressed: color-mix(in oklch, var(--accent) 88%, var(--foreground) 12%);
+  --text-primary: var(--foreground);
+  --text-secondary: var(--muted-foreground);
+  --action-primary: var(--primary);
+  --primary-hover: color-mix(in oklch, var(--primary) 88%, var(--foreground) 12%);
+  --selection: color-mix(in oklch, var(--primary) 10%, var(--background) 90%);
+  --selection-foreground: var(--foreground);
+  --focus-ring: var(--ring);
+  --status-running: #3157c8;
+  --status-running-bg: #e8edfc;
+  --status-success: #28734f;
+  --status-success-bg: #eaf3ed;
+  --status-warning: #8a5a16;
+  --status-warning-bg: #f9efdd;
+  --status-danger: #b23f42;
+  --status-danger-bg: #faebeb;
+  --chart-1: var(--primary);
+  --chart-2: var(--status-success);
+  --chart-3: var(--status-warning);
+  --chart-4: var(--muted-foreground);
+  --chart-5: var(--foreground);
   --gutter: color-mix(in oklch, var(--background) 90%, var(--foreground) 10%);
-  /* Sheet corner radius, tokenized off the design radius scale so it tracks
-     theme radius changes instead of a magic 16px (#100). */
-  --sheet-radius: var(--radius-2xl);
-  /* Downward-biased soft shadow: negative spread keeps it from bleeding onto
-     the flush-left sidebar (no seam) while lifting the sheet clearly off the
-     desk below it. */
-  --sheet-shadow: 0 10px 28px -6px rgb(0 0 0 / 0.14);
-  /* Light themes have opaque borders — soften to a whisper. (Dark overrides.) */
+  --sheet-radius: var(--radius-sheet);
+  --sheet-shadow: 0 2px 4px rgb(37 42 48 / 0.015), 0 12px 32px -16px rgb(37 42 48 / 0.19);
   --border-soft: color-mix(in oklch, var(--border) 22%, transparent);
   --sidebar-border-soft: color-mix(in oklch, var(--sidebar-border) 22%, transparent);
-  /* Card edge: stronger than the whisper border so cards keep a readable
-     container on the bright sheet, but softer than the old opaque hairline so
-     it never reads boxy (#090). Dark keeps its native low-alpha border. */
   --card-edge: color-mix(in oklch, var(--border) 55%, transparent);
   --terminal-bg: color-mix(in oklch, var(--card) 94%, black 6%);
   --terminal-fg: var(--foreground);
@@ -135,47 +201,73 @@
 }
 
 .dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.205 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.205 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.922 0 0);
-  --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.556 0 0);
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
-  --sidebar: oklch(0.205 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.556 0 0);
+  --background: #242830;
+  --foreground: #eceeea;
+  --card: #242830;
+  --card-foreground: #eceeea;
+  --popover: #2b3039;
+  --popover-foreground: #eceeea;
+  --primary: #90a8ff;
+  --primary-foreground: #17234c;
+  --primary-hover: #adc0ff;
+  --secondary: #2d323a;
+  --secondary-foreground: #eceeea;
+  --muted: #2d323a;
+  --muted-foreground: #a5aeb9;
+  --accent: #2d323a;
+  --accent-foreground: #eceeea;
+  --destructive: #f1a0a5;
+  --border: #3b4049;
+  --input: #707b8b;
+  --ring: #90a8ff;
+  --selection: #303e62;
+  --selection-foreground: #c1ceff;
+  --sidebar: #191c21;
+  --sidebar-foreground: #eceeea;
+  --sidebar-primary: #90a8ff;
+  --sidebar-primary-foreground: #17234c;
+  --sidebar-accent: #303e62;
+  --sidebar-accent-foreground: #c1ceff;
+  --sidebar-border: #30343b;
+  --sidebar-ring: #90a8ff;
+  --primary-hover: color-mix(in oklch, var(--primary) 88%, var(--foreground) 12%);
+  --selection: color-mix(in oklch, var(--primary) 16%, var(--background) 84%);
+  --selection-foreground: var(--foreground);
+  --status-running: #b6c6ff;
+  --status-running-bg: #303e62;
+  --status-success: #8acda8;
+  --status-success-bg: #273d32;
+  --status-warning: #e7bc77;
+  --status-warning-bg: #403728;
+  --status-danger: #f1a0a5;
+  --status-danger-bg: #492d32;
   --gutter: color-mix(in oklch, var(--background) 85%, black 15%);
-  /* Dark borders are already low-alpha hairlines — don't soften further (#086). */
   --border-soft: var(--border);
   --sidebar-border-soft: var(--sidebar-border);
-  /* Dark cards already separate by fill; keep the edge at the native border
-     rather than the light-mode 55% mix (which would only weaken it) (#090). */
   --card-edge: var(--border);
-  /* Lift the sheet with a top highlight + deeper, spread-contained drop so it
-     floats on the dark desk instead of smearing a darker blob into it (#087). */
-  --sheet-shadow: inset 0 1px 0 rgb(255 255 255 / 0.05), 0 12px 30px -6px rgb(0 0 0 / 0.55);
+  --sheet-shadow: inset 0 1px 0 rgb(255 255 255 / 0.025), 0 12px 32px -10px rgb(0 0 0 / 0.44);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+@media (max-width: 767px) {
+  :root { --font-size-document-title: 2rem; }
+}
+
+@media (pointer: coarse) {
+  [data-slot="button"], [data-slot="toggle"], [data-slot="toolbar-button"], [data-slot="input"] {
+    min-height: 44px;
+  }
+  [data-slot="button"], [data-slot="toggle"], [data-slot="toolbar-button"] {
+    min-width: 44px;
+  }
 }
 
 @layer base {
@@ -184,6 +276,8 @@
   }
   body {
     @apply bg-background text-foreground;
+    font-size: var(--font-size-ui);
+    line-height: 1.125rem;
   }
   html {
     @apply font-sans;
@@ -205,12 +299,23 @@
   }
 }
 
-/* Manila Arc: the paper (Cabinet) theme's desk gutter is a warm manila.
-   Keyed on data-custom-theme so it clears cleanly when switching themes —
-   an inline theme var would stick. Every other theme derives --gutter from
-   --background in :root / .dark, so they all float their content too. */
+html:not([data-custom-theme]),
 html[data-custom-theme="paper"] {
-  --gutter: oklch(0.925 0.026 79);
+  --gutter: #e9e5dd;
+  --primary-hover: #2445ae;
+  --selection: #e8edfc;
+  --selection-foreground: #2446a9;
+  --border-soft: var(--border);
+  --card-edge: var(--border);
+}
+html.dark:not([data-custom-theme]),
+html[data-custom-theme="cabinet-dark"] {
+  --gutter: #191c21;
+  --primary-hover: #adc0ff;
+  --selection: #303e62;
+  --selection-foreground: #c1ceff;
+  --border-soft: var(--border);
+  --card-edge: var(--border);
 }
 
 /* Custom theme font overrides — outside @layer so they beat Tailwind utilities */
@@ -221,11 +326,7 @@ html[data-custom-theme] body {
 html[data-custom-theme] h1,
 html[data-custom-theme] h2,
 html[data-custom-theme] h3,
-html[data-custom-theme] h4,
-html[data-custom-theme] .tiptap h1,
-html[data-custom-theme] .tiptap h2,
-html[data-custom-theme] .tiptap h3,
-html[data-custom-theme] .tiptap h4 {
+html[data-custom-theme] h4 {
   font-family: var(--font-heading-theme, var(--font-theme)) !important;
 }
 
@@ -460,41 +561,47 @@ html[lang^="zh-Hant"] h1.font-ui, html[lang^="zh-Hant"] h2.font-ui {
 /* Tiptap Editor Styles */
 .tiptap {
   outline: none;
-  font-size: 0.9375rem;
+  font-size: var(--font-size-reading);
+  line-height: 1.625;
   letter-spacing: -0.011em;
 }
 
-.tiptap h1 {
-  font-size: 2rem;
-  font-weight: 600;
+html .tiptap h1 {
+  font-family: var(--font-document-theme, var(--font-reading)), "Noto Sans SC", "Noto Sans TC", Georgia, serif !important;
+  font-size: var(--font-size-document-title);
+  font-weight: 500;
   line-height: 1.2;
   margin-top: 2rem;
   margin-bottom: 0.75rem;
   letter-spacing: -0.025em;
 }
 
+.tiptap > h1:first-child {
+  margin-top: 0;
+}
+
 .tiptap h2 {
-  font-size: 1.5rem;
+  font-size: 1.125rem;
   font-weight: 600;
-  line-height: 1.3;
+  line-height: 1.5;
   margin-top: 1.75rem;
   margin-bottom: 0.5rem;
   letter-spacing: -0.02em;
 }
 
 .tiptap h3 {
-  font-size: 1.25rem;
+  font-size: 1rem;
   font-weight: 600;
-  line-height: 1.4;
+  line-height: 1.5;
   margin-top: 1.5rem;
   margin-bottom: 0.5rem;
   letter-spacing: -0.015em;
 }
 
 .tiptap h4 {
-  font-size: 1.0625rem;
+  font-size: 0.9375rem;
   font-weight: 600;
-  line-height: 1.4;
+  line-height: 1.5;
   margin-top: 1.25rem;
   margin-bottom: 0.5rem;
   letter-spacing: -0.01em;
@@ -502,7 +609,7 @@ html[lang^="zh-Hant"] h1.font-ui, html[lang^="zh-Hant"] h2.font-ui {
 
 .tiptap p {
   margin-bottom: 0.75rem;
-  line-height: 1.65;
+  line-height: 1.625;
 }
 
 /* Per-block automatic direction inference.
@@ -548,7 +655,7 @@ html[lang^="zh-Hant"] h1.font-ui, html[lang^="zh-Hant"] h2.font-ui {
 .tiptap li {
   padding-inline-start: 1.5rem;
   margin-bottom: 0.25rem;
-  line-height: 1.65;
+  line-height: 1.625;
 }
 
 /* In an explicitly RTL document every list item is RTL — bullet/number on

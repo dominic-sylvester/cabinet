@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Inter, JetBrains_Mono, Instrument_Serif, Cardo } from "next/font/google";
+import { Inter, JetBrains_Mono, Instrument_Serif, Cardo, Source_Serif_4 } from "next/font/google";
 import { ThemeProvider } from "@/components/theme-provider";
 import { ThemeInitializer } from "@/components/layout/theme-initializer";
 import { RoomThemeSync } from "@/components/layout/room-theme-sync";
@@ -25,6 +25,12 @@ const inter = Inter({
 const jetbrainsMono = JetBrains_Mono({
   variable: "--font-mono",
   subsets: ["latin"],
+  display: "swap",
+});
+
+const sourceSerif = Source_Serif_4({
+  variable: "--font-reading",
+  subsets: ["latin", "latin-ext"],
   display: "swap",
 });
 
@@ -60,7 +66,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${inter.variable} ${jetbrainsMono.variable} ${instrumentSerif.variable} ${cardo.variable} h-full antialiased`}
+      className={`${inter.variable} ${jetbrainsMono.variable} ${sourceSerif.variable} ${instrumentSerif.variable} ${cardo.variable} h-full antialiased`}
       suppressHydrationWarning
     >
       <head>

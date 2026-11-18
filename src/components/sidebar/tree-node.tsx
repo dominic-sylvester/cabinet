@@ -750,11 +750,11 @@ function TreeNodeImpl({
               // Uses logical start/rounded-e so the bar flips to the
               // right edge in RTL and stays rounded on its inner side.
               isSelected &&
-                "bg-accent/70 text-accent-foreground font-semibold before:absolute before:start-0 before:top-1 before:bottom-1 before:w-[2px] before:rounded-e-full before:bg-primary",
+                "bg-selection text-selection-foreground font-semibold before:absolute before:start-0 before:top-1 before:bottom-1 before:w-[2px] before:rounded-e-full before:bg-primary",
               // Recently created/changed by a task — subtle tint + an
               // unread-style bump to fuller, medium-weight text until opened.
               isChanged && !isSelected &&
-                "bg-emerald-500/[0.06] font-medium text-foreground before:absolute before:start-0 before:top-1 before:bottom-1 before:w-[2px] before:rounded-e-full before:bg-emerald-500/70",
+                "bg-status-success-bg font-medium text-foreground before:absolute before:start-0 before:top-1 before:bottom-1 before:w-[2px] before:rounded-e-full before:bg-status-success",
               showInto &&
                 "bg-primary/10 ring-1 ring-primary/30 ring-inset",
               blink && "cabinet-tree-blink",

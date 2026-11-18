@@ -47,8 +47,9 @@ import { useCabinetUpdate } from "@/hooks/use-cabinet-update";
 import { useTheme } from "@/components/theme-provider";
 import {
   THEMES,
+  DEFAULT_THEME_PAIR,
+  resolveActiveTheme,
   applyTheme,
-  getStoredThemeName,
   storeThemeName,
   getStoredThemeMode,
   storeThemeMode,
@@ -432,10 +433,7 @@ export function SettingsPage() {
   const [activeThemeName, setActiveThemeName] = useState<string | null>(null);
   // Audit #045: theme mode state.
   const [themeMode, setThemeModeState] = useState<ThemeMode>("manual");
-  const [themePair, setThemePairState] = useState<{ light: string; dark: string }>({
-    light: "paper",
-    dark: "claude",
-  });
+  const [themePair, setThemePairState] = useState<{ light: string; dark: string }>({ ...DEFAULT_THEME_PAIR });
   const [telemetryEnabled, setTelemetryEnabled] = useState<boolean | null>(null);
   const [telemetryEnvDisabled, setTelemetryEnvDisabled] = useState(false);
   const [telemetrySaving, setTelemetrySaving] = useState(false);
@@ -456,7 +454,7 @@ export function SettingsPage() {
 
   // Sync active theme name on mount
   useEffect(() => {
-    setActiveThemeName(getStoredThemeName() || "paper");
+    setActiveThemeName(resolveActiveTheme()?.name || DEFAULT_THEME_PAIR.light);
     // Audit #045: hydrate match-system state.
     setThemeModeState(getStoredThemeMode());
     setThemePairState(getStoredThemePair());

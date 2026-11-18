@@ -1109,11 +1109,11 @@ export function AppShell() {
         and the fixed, full-height rail — a floating capsule of avatars —
         lives in that gutter. */}
     <div
-      className="flex h-screen bg-[var(--gutter)] text-foreground transition-[padding] duration-200 ease-out"
+      className="flex h-screen bg-surface-desk text-foreground transition-[padding] duration-200 ease-out"
       style={
         isMobile || focusMode
           ? undefined
-          : { paddingTop: 10, paddingInlineEnd: taskRailOpen ? 52 : 10, paddingBottom: 0, paddingInlineStart: 0 }
+          : { paddingTop: "var(--sheet-inset)", paddingInlineEnd: taskRailOpen ? 52 : "var(--sheet-inset)", paddingBottom: 0, paddingInlineStart: 0 }
       }
     >
       {/* Audit #031: SR-only live region announcing the active page title

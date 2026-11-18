@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import type { ConversationDetail } from "@/types/conversations";
 import { Button } from "@/components/ui/button";
+import { StatusBadge as SemanticStatusBadge } from "@/components/ui/status-badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { appendConversationCabinetPath } from "@/lib/agents/conversation-identity";
 import { ConversationContentViewer } from "@/components/agents/conversation-content-viewer";
@@ -28,19 +29,14 @@ import { useLocale } from "@/i18n/use-locale";
 import { SafeHtml } from "@/components/ui/safe-html";
 
 function StatusBadge({ status }: { status: string }) {
-  const { t } = useLocale();
-  const color =
-    status === "running"
-      ? "text-emerald-400 bg-emerald-400/10 border-emerald-400/20"
-      : "text-muted-foreground bg-muted/30 border-border";
-
   return (
-    <span
-      className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[11px] font-medium ${color}`}
+    <SemanticStatusBadge
+      tone={status === "running" ? "running" : "neutral"}
+      icon={status === "running" ? Loader2 : undefined}
+      className={status === "running" ? "[&_svg]:animate-spin" : undefined}
     >
-      {status === "running" ? <Loader2 className="h-3 w-3 animate-spin" /> : null}
       {status}
-    </span>
+    </SemanticStatusBadge>
   );
 }
 

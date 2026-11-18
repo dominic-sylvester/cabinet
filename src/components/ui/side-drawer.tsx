@@ -63,7 +63,7 @@ export function SideDrawer({ drawer, onScrimClick, children }: SideDrawerProps) 
       className={cn(
         "relative shrink-0 self-stretch",
         !resizing &&
-          "transition-[width] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]"
+          "transition-[width] duration-[var(--motion-drawer)] ease-[var(--ease-drawer)]"
       )}
       style={{ width: expanded ? panelWidth : 0 }}
       onTransitionEnd={onWrapperTransitionEnd}
@@ -76,12 +76,12 @@ export function SideDrawer({ drawer, onScrimClick, children }: SideDrawerProps) 
           slides in on open (transform, so its fixed width never reflows). */}
       <div
         className={cn(
-          "absolute top-0 bottom-[10px] end-0 flex flex-col overflow-hidden rounded-[var(--sheet-radius)] bg-background",
+          "absolute top-0 bottom-[var(--sheet-inset)] end-0 flex flex-col overflow-hidden rounded-[var(--sheet-radius)] bg-background",
           !resizing &&
-            "transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]"
+            "transition-transform duration-[var(--motion-drawer)] ease-[var(--ease-drawer)]"
         )}
         style={{
-          width: panelWidth - 10,
+          width: `calc(${panelWidth}px - var(--sheet-inset))`,
           boxShadow: "var(--sheet-shadow)",
           transform: expanded ? "translateX(0)" : hiddenTransform,
         }}

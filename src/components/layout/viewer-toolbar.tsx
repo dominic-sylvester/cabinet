@@ -115,7 +115,7 @@ export function ViewerToolbar({
         // CSS targets (globals.css) — this bar is a <div>, not a <header>, so
         // without the class the hidden-title-bar window can't be dragged from
         // the editor or any file viewer built on ViewerToolbar.
-        "viewer-toolbar flex shrink-0 items-center justify-between gap-x-3 gap-y-2 px-3 py-1.5 transition-[padding] duration-200 md:h-10 md:py-0 animate-in fade-in slide-in-from-top-1 duration-300 ease-out",
+        "viewer-toolbar flex shrink-0 items-center justify-between gap-x-3 gap-y-2 px-3 py-1.5 transition-[padding] duration-200 md:h-[var(--toolbar-height)] md:py-0 animate-in fade-in slide-in-from-top-1 duration-300 ease-out",
         className
       )}
       style={{ paddingInlineStart: `calc(1rem + var(--sidebar-toggle-offset, 0px))` }}
@@ -125,12 +125,12 @@ export function ViewerToolbar({
         {leading}
         {showBreadcrumb && path ? <ViewerBreadcrumb path={path} /> : null}
         {badge && (
-          <span className="shrink-0 rounded bg-muted px-1.5 py-0.5 text-xs text-muted-foreground/50">
+          <span className="shrink-0 rounded bg-muted px-1.5 py-0.5 text-xs text-ink-secondary">
             {badge}
           </span>
         )}
         {sublabel && (
-          <span className="hidden shrink-0 text-xs text-muted-foreground/40 sm:inline">
+          <span className="hidden shrink-0 text-xs text-ink-secondary sm:inline">
             {sublabel}
           </span>
         )}

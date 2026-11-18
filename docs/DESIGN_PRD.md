@@ -1,7 +1,7 @@
-# PRD — Cabinet Visual Design (Manila Arc)
+# Cabinet design system: the research desk
 
-**Status:** Shipped on `feat/manila-arc-borderless-ui`; this is the single source of truth for Cabinet's visual system.
-**Author:** hilash · **Last updated:** 2026-07-04
+**Status:** Implemented shared design system. Approved reference: `prototypes/cabinet-design-system.html`. Live component preview: `/design-system`.
+**Author:** hilash · **Last updated:** 2026-11-18
 **Driver:** Make Cabinet feel like a native desktop app, not a website — a borderless, content-first surface where bright "sheets" of content float on a manila **desk**, the chrome recedes into the background, and every file type reads as one coherent system.
 
 > **Supersedes** the "removed the sheet-like rounded container" direction noted in `CABINET_UI_WORK_SUMMARY.md` (2026-04-12). That was an intermediate flat phase; the floating-sheet model below is the current, deliberate language.
@@ -26,9 +26,9 @@ Five principles drive every surface:
 
 The app is a full-viewport **desk** (`--gutter`). It never scrolls. Inside it, each view's main content floats on an elevated **ContentSheet**:
 
-- **Rounded:** `border-radius: var(--sheet-radius)` (= `--radius-2xl`, ~18px).
+- **Rounded:** `border-radius: var(--sheet-radius)` (= `--radius-sheet`, 18px).
 - **Lifted:** `box-shadow: var(--sheet-shadow)` — a soft, diffuse drop shadow (dark themes add an inset top highlight so the sheet reads as lifted, not smeared).
-- **Inset on all four sides** so the desk gutter breathes around every corner. The desk supplies the top + inline-end padding (app shell); the sheet supplies its own inline-start + bottom margin (`10px` each). Result: the sheet floats free, all four rounded corners visible.
+- **Inset on all four sides** so the desk gutter breathes around every corner. The desk supplies the top + inline-end padding (app shell); the sheet supplies its own inline-start + bottom margin (`--sheet-inset`, 12px each). Result: the sheet floats free, all four rounded corners visible.
 - **No border.** The shadow + the gutter/sheet tone difference do all the separating.
 
 ```
@@ -43,7 +43,7 @@ The app is a full-viewport **desk** (`--gutter`). It never scrolls. Inside it, e
 └─────────────────────────────────────────────┘
 ```
 
-**Rule:** Chrome (toolbars, tabs, breadcrumbs, the status bar, the daemon-health banner) lives *outside* the sheet, on the desk. Only content goes inside the sheet.
+**Rule:** Navigation chrome (viewer toolbar, tabs, breadcrumbs, status bar, daemon-health banner) lives outside the sheet, on the desk. The markdown formatting bar is the exception: editing controls live at the top of the content sheet, separated by a quiet rule.
 
 ---
 
@@ -74,12 +74,12 @@ A single `md:h-10` row: `[breadcrumb + badge + sublabel]` on the left, `[viewer-
 ### `ToolbarButton` — the one button
 Every toolbar affordance (per-viewer actions **and** the global search/exit-browse) is a single component so the tone can't drift:
 
-- **Muted by default:** `text-muted-foreground/70`, hover → `bg-accent` + `text-foreground` (the same style the markdown formatting bar uses).
+- **Muted by default:** `text-ink-secondary`, hover → `bg-surface-hover` + `text-foreground` (the same style the markdown formatting bar uses).
 - **Icon-first.** Common actions are icon-only with a tooltip (e.g. *Open in new tab* is just `↗`). Labels are kept only where the icon isn't self-evident (Wrap, Raw, Code, SVG, Reveal).
-- **Toggle state** via `active` (subtle `bg-muted`, not a brand color).
+- **Toggle state** via `active` (`bg-selection` + `text-selection-foreground`, with `aria-pressed` on button toggles).
 - Renders a `<button>` or an `<a>` (for download / open-raw links) from the same props.
 
-**The one exception:** the split **New Chat** CTA (`NewTaskButton`) stays the brand-primary (rust) button. It is the single call-to-action per surface; everything else recedes. Nothing else in the toolbar is at full contrast.
+**Primary actions:** use the ink-blue `Button` default variant for the surface's main action. Toolbar utilities use `ToolbarButton`. Keep the existing New Chat/create behavior; do not introduce extra competing calls to action.
 
 ---
 
@@ -100,7 +100,7 @@ Same component (`FolderTabs`) is reused by the Tasks board and Agents views, so 
 
 - The sidebar rail is painted in **the same color as the desk** (`--sidebar` == `--gutter`) with **no dividing border** — it *is* part of the desk. The content sheet floating to its right is what creates the separation.
 - Collapsing animates only the `<aside>` width (the tree never reflows mid-animation).
-- **When collapsed**, a single expand toggle floats at the top-left. It sits in the *same band as the toolbar* (desk `paddingTop` 10px + the `h-10` toolbar row), vertically centered, styled as a muted toolbar button — so it reads as the first toolbar button, not a floating orphan. `ViewerToolbar` reserves the matching inline-start gap so the breadcrumb never slides under it.
+- **When collapsed**, a single expand toggle floats at the top-left. It sits in the *same band as the toolbar* (desk `paddingTop: var(--sheet-inset)` + the `--toolbar-height` (52px) row), vertically centered, styled as a muted toolbar button — so it reads as the first toolbar button, not a floating orphan. `ViewerToolbar` reserves the matching inline-start gap so the breadcrumb never slides under it.
 - `--traffic-clearance` (80px on LTR desktop/Electron builds) reserves room for the macOS traffic-light buttons in the sidebar header.
 
 ---
@@ -119,19 +119,53 @@ Linked ("Connect Knowledge") nodes swap **Rename → Edit Symlink** and **Delete
 
 ## 8. Design tokens
 
-| Token | Value | Meaning |
-|---|---|---|
-| `--radius` | `0.625rem` (10px) | Base radius; a scale runs `--radius-sm`(0.6×) … `--radius-4xl`(2.6×). |
-| `--sheet-radius` | `--radius-2xl` (~18px) | The floating content sheet's corner radius. |
-| `--sheet-shadow` | `0 10px 28px -6px rgb(0 0 0 / .14)` | The sheet's lift (dark themes add an inset top highlight + deeper shadow). |
-| `--gutter` | `color-mix(oklch, background 90%, foreground 10%)` | The desk. Always slightly darker than the sheet so the sheet reads as lifted. Paper theme overrides it with a warm manila `oklch(0.925 0.026 79)`; dark themes mix toward black. |
-| `--sidebar` | `== --gutter` | The rail merges into the desk. |
-| `--sidebar-toggle-offset` | `2.25rem` when collapsed, else `0` | Inline-start gap the toolbar reserves for the floating expand toggle. |
-| `--traffic-clearance` | `80px` (LTR desktop) | Room for macOS window controls. |
-| Desk inset | `10px` | Gutter around the sheet (top + inline-end from the shell; inline-start + bottom from the sheet). |
-| Task-rail gutter | `30px` | Inline-end reserve when the task rail is open (the app shrinks into the remaining width). |
+The palette and theme definitions live in `src/app/globals.css` and `src/lib/themes.ts`.
+The built-in pair is `paper` (Cabinet) and `cabinet-dark` (Cabinet Dark). Existing saved themes and room-specific choices remain supported. System mode defaults to this pair and validates stored variants before applying them.
 
-`--gutter` **must** be defined as a CSS rule in `globals.css`, not as an inline theme variable — an inline var on the theme root wouldn't cascade to the desk correctly (the paper theme learned this the hard way).
+| Role | Light | Dark |
+|---|---|---|
+| Desk / `--surface-desk` | `#E9E5DD` | `#191C21` |
+| Sheet / `--surface-sheet` | `#FFFEFB` | `#242830` |
+| Overlay / `--surface-overlay` | `#FFFFFF` | `#2B3039` |
+| Main text / `--text-primary` | `#252A30` | `#ECEEEA` |
+| Secondary text / `--text-secondary` | `#626B75` | `#A5AEB9` |
+| Primary action / `--action-primary` | `#3157C8` | `#90A8FF` |
+| Selection / `--selection` | `#E8EDFC` | `#303E62` |
+| Selected text / `--selection-foreground` | `#2446A9` | `#C1CEFF` |
+| Input boundary / `--input` | `#858E99` | `#707B8B` |
+
+Three layers keep the system coherent:
+
+1. Theme palette values set the existing background, foreground, primary, muted, and sidebar variables.
+2. Semantic aliases expose surface, text, selection, focus, and status roles. New UI should use these roles instead of raw hex values or Tailwind color families.
+3. Component geometry uses named controls, rows, toolbars, and sheet tokens.
+
+| Token | Value | Use |
+|---|---|---|
+| `--radius-control` | `6px` | Buttons, fields, status badges |
+| `--radius-group` | `10px` | Related content and artifact previews |
+| `--radius-sheet` / `--sheet-radius` | `18px` | Main content sheets and drawers |
+| `--sheet-inset` | `12px` | Desk gutter on all four sides |
+| `--control-height-compact` | `28px` | Dense desktop utilities |
+| `--control-height` | `32px` | Standard desktop controls |
+| `--control-height-prominent` | `40px` | Prominent actions |
+| `--toolbar-height` | `52px` | Shared viewer toolbar and collapsed-sidebar toggle |
+| `--row-height` | `32px` | Standard navigation rows |
+| `--reading-width` | `48rem` | Normal-width reading surface |
+| `--space-1/2/3/4/6/8/12` | `4/8/12/16/24/32/48px` | Shared spacing scale |
+| `--motion-feedback/menu/drawer` | `120/180/240ms` | Feedback, menus, drawers |
+| `--sidebar-toggle-offset` | `calc(8rem + traffic clearance)` collapsed | Space reserved for the existing brand and expand toggle |
+| Task-rail gutter | `52px` | Room for the existing task rail |
+
+Inter carries interface text and operational headings. Source Serif 4 carries document titles. JetBrains Mono carries code, paths, and execution details. Source Serif 4 is self-hosted through Next's font pipeline; the default pair does not request Google Fonts at runtime. Expressive themes can supply a separate `documentFont`; otherwise their existing heading/body choice is preserved.
+
+Use `text-ui` (13/18), `text-meta` (12/16), `text-label` (11/16), and `text-reading` (16/26). Document titles are 36px on desktop and 32px on mobile; section headings remain compact sans-serif. The shared `cn()` helper registers these type roles with tailwind-merge so type sizes never remove foreground colors.
+
+Agent states have dedicated foreground/background pairs: `status-running`, `status-success`, `status-warning`, and `status-danger`. Use `StatusBadge` with an icon and readable label. Running is blue, review/input is amber, completion is green, and failure is red across themes. File-type, diff, and syntax colors are separate concerns.
+
+Focus uses a visible 2px outline with 2px offset. Shared controls have 44px minimum touch targets on coarse pointers. Reduced-motion preferences suppress animations and shorten transitions.
+
+The `--gutter` stays in CSS: the Cabinet pair has explicit desk colors keyed by `data-custom-theme`; other themes derive their desk from the active palette. `applyTheme` clears every theme-owned inline variable before applying the next palette, including selection, hover, and document-font overrides.
 
 ---
 
@@ -139,7 +173,7 @@ Linked ("Connect Knowledge") nodes swap **Rename → Edit Symlink** and **Delete
 
 - **Mobile:** the floating-sheet model collapses to **full-bleed** — the ContentSheet drops its radius, shadow, and insets and fills the viewport (no desk showing). Chrome shifts to a bottom nav.
 - **Desktop / Electron:** full desk with insets; `--traffic-clearance` reserves the traffic-light zone; the desk itself never scrolls (only the sheet body and the sidebar rail do).
-- **Task rail open:** the whole app shrinks into `viewport − 30px` and the fixed, full-height rail lives in that inline-end gutter.
+- **Task rail open:** the whole app shrinks into `viewport − 52px` and the fixed, full-height rail lives in that inline-end gutter.
 
 ---
 
@@ -164,6 +198,8 @@ Linked ("Connect Knowledge") nodes swap **Rename → Edit Symlink** and **Delete
 
 ---
 
+The shared semantic badge lives in `src/components/ui/status-badge.tsx`. Review shared controls, reading typography, surfaces, theme variants, and status states at `/design-system` (`src/app/design-system/page.tsx`).
+
 ## 11. Status & open items
 
 **Shipped:** the desk/sheet model, chrome-on-desk, all 14 file viewers migrated to `ViewerLayout`, unified `ToolbarButton` tone, folder tabs, collapsed-sidebar toggle alignment, file-history/search/download moved into the right-click menu.
@@ -179,7 +215,7 @@ Linked ("Connect Knowledge") nodes swap **Rename → Edit Symlink** and **Delete
 
 1. **Render your toolbar on the desk, your body in a `ContentSheet`.** Use `ViewerLayout` — do not wrap your whole view in a sheet.
 2. **Add your view's type flag to `bareLayout`** in `app-shell` so the shell doesn't sheet you again.
-3. **Every button is a `ToolbarButton`.** Don't hand-roll a toolbar button; you'll drift the tone. Icon-only unless the icon isn't obvious. Exactly one brand CTA per surface (usually the shared New Chat).
+3. **Every button is a `ToolbarButton`.** Don't hand-roll a toolbar button; you'll drift the tone. Icon-only unless the icon isn't obvious. Reserve the primary action color for the surface's main action.
 4. **No borders.** Separate with the sheet's elevation + the desk tone. Reach for a 1px line only when elevation genuinely can't express the relationship.
 5. **Meta actions go in the right-click menu**, not the toolbar — history, export/download, path copies. Keep the toolbar to what you *do to the content in view*.
 6. **Test collapsed sidebar + mobile.** The toggle must land on the toolbar band; the sheet must go full-bleed on mobile.

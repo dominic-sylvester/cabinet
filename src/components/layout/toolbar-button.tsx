@@ -34,7 +34,7 @@ export function ToolbarButton({
   label,
   title,
   iconOnly = false,
-  active = false,
+  active,
   disabled = false,
   href,
   download,
@@ -44,9 +44,9 @@ export function ToolbarButton({
   children,
 }: ToolbarButtonProps) {
   const cls = cn(
-    "inline-flex h-7 shrink-0 items-center rounded-md text-xs font-medium transition-colors cursor-pointer text-muted-foreground/70 hover:bg-accent hover:text-foreground disabled:opacity-40 disabled:pointer-events-none",
+    "inline-flex h-[var(--control-height-compact)] shrink-0 items-center rounded-control text-meta font-medium transition-colors duration-[var(--motion-feedback)] cursor-pointer text-ink-secondary hover:bg-surface-hover hover:text-foreground active:bg-surface-pressed disabled:opacity-50 disabled:pointer-events-none",
     iconOnly ? "w-7 justify-center" : "gap-1.5 px-2",
-    active && "bg-muted text-foreground",
+    active && "bg-selection text-selection-foreground",
     className
   );
   const inner = (
@@ -74,7 +74,9 @@ export function ToolbarButton({
   }
   return (
     <button
+      data-slot="toolbar-button"
       type="button"
+      aria-pressed={active}
       onClick={onClick}
       disabled={disabled}
       className={cls}

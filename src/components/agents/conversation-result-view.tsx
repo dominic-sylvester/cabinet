@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { ExternalLink, FileText, Files, PackageOpen, CheckCircle, XCircle, Clock } from "lucide-react";
 import type { ConversationDetail } from "@/types/conversations";
 import { Button } from "@/components/ui/button";
+import { StatusBadge as SemanticStatusBadge } from "@/components/ui/status-badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { appendConversationCabinetPath } from "@/lib/agents/conversation-identity";
 import { buildTaskPath } from "@/lib/navigation/task-route";
@@ -20,21 +21,10 @@ import { useLocale } from "@/i18n/use-locale";
 import { SafeHtml } from "@/components/ui/safe-html";
 
 function StatusBadge({ status }: { status: string }) {
-  const { t } = useLocale();
-  const isCompleted = status === "completed";
-  const isFailed = status === "failed";
-  const Icon = isCompleted ? CheckCircle : isFailed ? XCircle : Clock;
-  const color = isCompleted
-    ? "text-emerald-400 bg-emerald-400/10 border-emerald-400/20"
-    : isFailed
-      ? "text-red-400 bg-red-400/10 border-red-400/20"
-      : "text-emerald-400 bg-emerald-400/10 border-emerald-400/20";
-
   return (
-    <span className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[11px] font-medium ${color}`}>
-      <Icon className="h-3 w-3" />
+    <SemanticStatusBadge tone={status === "failed" ? "danger" : "success"} icon={status === "failed" ? XCircle : CheckCircle}>
       {status}
-    </span>
+    </SemanticStatusBadge>
   );
 }
 
@@ -140,7 +130,7 @@ export function ConversationResultView({
               {detail.meta.summary}
             </p>
           ) : detail.meta.status === "running" ? (
-            <p className="rounded-lg border border-emerald-400/30 bg-emerald-400/10 px-3 py-2 text-[12px] leading-relaxed text-emerald-300">
+            <p className="rounded-lg border border-status-success/25 bg-status-success-bg px-3 py-2 text-[12px] leading-relaxed text-status-success">
               Waiting for the CLI to emit a cabinet-block summary. Check the Terminal tab for live output.
             </p>
           ) : (
@@ -214,7 +204,7 @@ export function ConversationResultView({
               })}
             </div>
           ) : detail.meta.status === "running" ? (
-            <div className="rounded-xl border border-emerald-400/30 bg-emerald-400/10 px-4 py-3 text-[12px] leading-relaxed text-emerald-300">
+            <div className="rounded-xl border border-status-success/25 bg-status-success-bg px-4 py-3 text-[12px] leading-relaxed text-status-success">
               Waiting for the CLI to emit a cabinet-block summary. Check the Terminal tab for live output.
             </div>
           ) : (

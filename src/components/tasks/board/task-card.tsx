@@ -85,7 +85,7 @@ export function TaskCard({
         "outline-none focus-visible:ring-2 focus-visible:ring-foreground/70 focus-visible:ring-offset-2 focus-visible:ring-offset-background",
         "hover:border-foreground/30 hover:shadow-sm",
         compact ? "px-2 py-1.5" : "p-3",
-        isActive ? "border-foreground/50 shadow-sm" : "border-border/60",
+        isActive ? "border-primary/40 bg-selection shadow-sm" : "border-border/60",
         isTerminal &&
           "border-s-2 border-s-emerald-500/60 bg-[linear-gradient(to_right,rgba(16,185,129,0.035),transparent_30%)] rtl:bg-[linear-gradient(to_left,rgba(16,185,129,0.035),transparent_30%)]"
       )}

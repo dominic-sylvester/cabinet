@@ -71,9 +71,9 @@ export function FolderTabs({
             type="button"
             onClick={() => onSelect(t.id)}
             className={cn(
-              "relative inline-flex items-center gap-1.5 rounded-t-[9px] px-4 text-[12.5px] font-medium transition-all duration-150 cursor-pointer",
+              "relative inline-flex items-center gap-1.5 rounded-t-[var(--radius-group)] px-4 text-meta font-medium transition-all duration-150 cursor-pointer",
               on
-                ? "z-20 bg-background text-foreground pt-2 pb-2.5 shadow-[0_-2px_8px_-3px_rgb(0_0_0/0.16)]"
+                ? "z-20 bg-background text-foreground pt-2 pb-2.5"
                 : "z-0 mb-px bg-muted/70 text-muted-foreground pt-1.5 pb-2 hover:bg-muted hover:text-foreground"
             )}
           >

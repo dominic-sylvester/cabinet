@@ -62,7 +62,7 @@ function useIsMobile() {
 
 const SIDEBAR_MIN_WIDTH = 220;
 const SIDEBAR_MAX_WIDTH = 420;
-const SIDEBAR_DEFAULT_WIDTH = 280;
+const SIDEBAR_DEFAULT_WIDTH = 240;
 
 function clamp(value: number, min: number, max: number) {
   return Math.min(Math.max(value, min), max);
@@ -208,7 +208,7 @@ export function Sidebar() {
       <aside
         suppressHydrationWarning
         className={cn(
-          "flex bg-[var(--gutter)] h-full overflow-hidden transition-[width] duration-200 will-change-[width] [&_button]:cursor-pointer",
+          "flex bg-surface-desk h-full overflow-hidden transition-[width] duration-200 will-change-[width] [&_button]:cursor-pointer",
           isMobile && "fixed inset-y-0 start-0 z-40",
           !isMobile && !collapsed && "shrink-0"
         )}
@@ -237,7 +237,7 @@ export function Sidebar() {
                     // Latin logo, so dial the size down for those scripts.
                     locale.startsWith("zh") ? "text-[14px]" : "text-[19px]"
                   )}
-                  style={{ color: "#8B5E3C" }}
+                  style={{ color: "var(--primary)" }}
                 >
                   {brandWord}
                 </span>
@@ -440,7 +440,7 @@ export function Sidebar() {
         // toolbar button rather than a floating orphan. ViewerToolbar reserves
         // the matching inline-start gap via --sidebar-toggle-offset.
         <div
-          className="absolute top-[10px] z-20 flex h-10 items-center gap-1 animate-in fade-in zoom-in-95 duration-200"
+          className="absolute top-[var(--sheet-inset)] z-20 flex h-[var(--toolbar-height)] items-center gap-1 animate-in fade-in zoom-in-95 duration-200"
           style={{ insetInlineStart: "calc(1rem + var(--traffic-clearance, 0px))" }}
         >
           {/* Brand persists when the sidebar is collapsed — it otherwise

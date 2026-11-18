@@ -12,6 +12,7 @@ import {
   applyTheme,
   getStoredThemeName,
   storeThemeName,
+  storeThemeMode,
   type ThemeDefinition,
 } from "@/lib/themes";
 
@@ -87,6 +88,7 @@ export function ThemePicker() {
   };
 
   const selectTheme = (themeDef: ThemeDefinition) => {
+    storeThemeMode("manual");
     applyTheme(themeDef);
     storeThemeName(themeDef.name);
     setTheme(themeDef.type);
@@ -94,6 +96,7 @@ export function ThemePicker() {
   };
 
   const selectDefault = (mode: "dark" | "light") => {
+    storeThemeMode("manual");
     applyTheme(null);
     storeThemeName(null);
     setTheme(mode);

@@ -231,7 +231,7 @@ export function KBEditor() {
     editorProps: {
       attributes: {
         class:
-          "focus:outline-none min-h-[calc(100vh-12rem)] px-4 sm:px-8 py-6 max-w-[var(--editor-max-w,48rem)] mx-auto",
+          "focus:outline-none min-h-[calc(100vh-12rem)] px-6 sm:px-12 py-10 max-w-[var(--editor-max-w,var(--reading-width))] mx-auto",
         dir: isRtl ? "rtl" : "ltr",
       },
       handleKeyDown: (view, event) => {
@@ -701,15 +701,9 @@ export function KBEditor() {
 
   return (
     <div className="flex-1 flex flex-col overflow-hidden min-h-0">
-      {/* Chrome row on the desk: folder tabs on the left; on the Page tab the
-          formatting toolbar scrolls to the right of them (transparent, faded).
-          Only the tabs connect down into the sheet below. Hidden entirely in
-          focus mode — content only. */}
-      {!focusMode && (
-      <div className="flex shrink-0 items-end gap-3 ps-4 pe-2 min-h-[34px]">
-        {showFolderTabs && (
+      {!focusMode && showFolderTabs && (
+        <div className="flex shrink-0 items-end ps-4 pe-2">
           <FolderTabs
-            className="shrink-0"
             ariaLabel="Page views"
             active={folderTab}
             onSelect={(id) => setFolderTab(id as "page" | "files")}
@@ -718,20 +712,9 @@ export function KBEditor() {
               { id: "files", label: "Files", count: renderedFolderChildren.length },
             ]}
           />
-        )}
-        {!onFilesTab && (
-          <div className="min-w-0 flex-1 mb-0.5 animate-in fade-in slide-in-from-left-3 duration-300 ease-out">
-            <EditorToolbar
-              editor={editor}
-              sourceMode={sourceMode}
-              onToggleSource={toggleSourceMode}
-              wideMode={wideMode}
-              onToggleWide={toggleWideMode}
-            />
-          </div>
-        )}
-      </div>
+        </div>
       )}
+
       {/* Files tab: elevated sheet holding the folder index. */}
       {onFilesTab && (
         <ContentSheet>
@@ -750,6 +733,17 @@ export function KBEditor() {
           Tiptap re-runs createNodeViews and flushSyncs inside a lifecycle. */}
       <div className={onFilesTab ? "hidden" : "flex-1 flex flex-col overflow-hidden min-h-0"}>
       <ContentSheet>
+      {!focusMode && (
+        <div className="shrink-0 border-b border-border px-4 py-2">
+          <EditorToolbar
+            editor={editor}
+            sourceMode={sourceMode}
+            onToggleSource={toggleSourceMode}
+            wideMode={wideMode}
+            onToggleWide={toggleWideMode}
+          />
+        </div>
+      )}
       {sourceMode && (
         <div className="flex-1 overflow-y-auto p-4" dir={isRtl ? "rtl" : undefined}>
           <textarea
@@ -763,7 +757,7 @@ export function KBEditor() {
         <div
           className={sourceMode ? "hidden" : "flex-1 relative"}
           dir={isRtl ? "rtl" : undefined}
-          style={{ "--editor-max-w": wideMode ? "none" : "48rem" } as React.CSSProperties}
+          style={{ "--editor-max-w": wideMode ? "none" : "var(--reading-width)" } as React.CSSProperties}
         >
           <FindBar editor={editor} />
           <div className="absolute inset-0 overflow-y-auto" data-editor-scroll>

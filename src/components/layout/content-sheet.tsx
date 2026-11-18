@@ -24,7 +24,7 @@ export function ContentSheet({
   return (
     <div
       className={cn(
-        "flex-1 flex flex-col overflow-hidden bg-background min-h-0",
+        "flex-1 flex flex-col overflow-hidden bg-surface-sheet min-h-0",
         className
       )}
       style={{
@@ -36,8 +36,8 @@ export function ContentSheet({
               // The desk supplies top + inline-end padding (app-shell); add the
               // inline-start + bottom gutter here so the sheet floats on all
               // four sides and every rounded corner is visible (#089).
-              marginInlineStart: 10,
-              marginBottom: 10,
+              marginInlineStart: "var(--sheet-inset)",
+              marginBottom: "var(--sheet-inset)",
             }),
         ...style,
       }}
