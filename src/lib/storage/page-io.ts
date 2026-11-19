@@ -1,4 +1,6 @@
 import fs from "fs/promises";
+import { createHash } from "node:crypto";
+import { withPageWriteLock, PageWriteConflict } from "./page-write-lock";
 import path from "path";
 import matter from "gray-matter";
 import yaml from "js-yaml";
@@ -240,7 +242,8 @@ function inferDirFromText(content: string): "rtl" | undefined {
 export async function writePage(
   virtualPath: string,
   content: string,
-  frontmatter: Partial<FrontMatter>
+  frontmatter: Partial<FrontMatter>,
+  options: { expectedRevision?: string; createOnly?: boolean } = {}
 ): Promise<void> {
   const resolved = resolveContentPath(virtualPath);
 
@@ -255,8 +258,8 @@ export async function writePage(
   } else if (await fileExists(resolved)) {
     filePath = resolved;
   } else {
-    // Default: if virtual path looks like a directory, use index.md
-    filePath = indexPath;
+    // Explicit Markdown filenames stay files; page directories use index.md.
+    filePath = resolved.endsWith(".md") ? resolved : indexPath;
   }
 
   // Auto-detect RTL when the writer didn't set `dir` explicitly and the
@@ -273,8 +276,20 @@ export async function writePage(
       .filter(([, v]) => v !== undefined)
   );
   const output = matter.stringify(content, fm);
-  await ensureDirectory(path.dirname(filePath));
-  await writeFileContent(filePath, output);
+  await withPageWriteLock(filePath, async () => {
+    if (options.expectedRevision !== undefined) {
+      const raw = await fs.readFile(filePath, "utf8").catch((error: NodeJS.ErrnoException) => {
+        if (error.code === "ENOENT") throw new PageWriteConflict("revision_conflict");
+        throw error;
+      });
+      if (createHash("sha256").update(raw).digest("hex") !== options.expectedRevision) throw new PageWriteConflict("revision_conflict");
+    }
+    await ensureDirectory(path.dirname(filePath));
+    if (options.createOnly) {
+      try { await fs.writeFile(filePath, output, { encoding: "utf8", flag: "wx" }); }
+      catch (error) { if ((error as NodeJS.ErrnoException).code === "EEXIST") throw new PageWriteConflict("already_exists"); throw error; }
+    } else await writeFileContent(filePath, output);
+  });
 }
 
 /**

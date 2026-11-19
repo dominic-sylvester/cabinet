@@ -200,6 +200,9 @@ This fork does not collect or send product telemetry, analytics, feedback, or si
 
 See [TELEMETRY.md](TELEMETRY.md) for the network boundary and optional independent release/registry configuration.
 
+## Cabinet and Hermes over MCP
+
+The local [MCP bridges](mcps/mcp-cabinet/README.md) connect Cabinet and Hermes in both directions. Hermes can search and update selected cabinets, exchange durable tasks, and start Cabinet agent runs. Cabinet's agent CLIs can delegate work to a selected Hermes profile and retrieve results after reconnecting. Connections use explicit cabinet grants, private local credentials, revision checks, and retry-safe operation receipts.
 
 ## Contributing
 

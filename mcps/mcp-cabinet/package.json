@@ -1,0 +1,7 @@
+{
+  "name": "cabinet-mcp", "version": "0.1.0", "private": true, "type": "module",
+  "description": "Local, scoped Cabinet tools and durable Hermes delegation over MCP.",
+  "scripts": { "build": "node esbuild.config.mjs", "typecheck": "tsc --noEmit", "smoke": "npm run build && node scripts/smoke.mjs" },
+  "dependencies": { "@modelcontextprotocol/sdk": "^1.27.1" },
+  "devDependencies": { "@types/node": "^22", "esbuild": "^0.25.12", "typescript": "^5" }
+}

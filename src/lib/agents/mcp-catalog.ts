@@ -1411,7 +1411,39 @@ sql_statement_permissions:
   byoRemote({ id: "mixpanel", label: "Mixpanel", blurb: "Query events, funnels, and cohorts.", logo: "/logos/mixpanel.svg", sourceUrl: "https://mixpanel.com/", tier: "community", actions: ["Query events & funnels", "Read cohorts", "Summarize trends"], where: "Use a hosted Mixpanel MCP URL or self-host." }),
 ];
 
+const HERMES: CatalogEntry = {
+  id: "hermes",
+  label: "Hermes",
+  blurb: "Delegate work to your local Hermes agent and retrieve durable results.",
+  iconSlug: "terminal",
+  bgImage: "",
+  logo: "",
+  sourceUrl: "https://github.com/dominic-sylvester/cabinet/tree/main/mcps/mcp-cabinet",
+  trustTier: "cabinet",
+  cloudUnsupported: true,
+  authBackend: "token",
+  transport: "stdio",
+  mcpServerName: "cabinet-hermes",
+  command: "node",
+  args: ["-e", "throw new Error('Build mcps/mcp-cabinet before connecting Hermes')"],
+  localBuild: "mcps/mcp-cabinet/dist/hermes.js",
+  serverEnv: { CABINET_HERMES_CONNECTION: "${CABINET_HERMES_CONNECTION}" },
+  credentials: [{
+    envKey: "CABINET_HERMES_CONNECTION", label: "Local Hermes connection file",
+    kind: "filepath", required: true,
+    placeholder: "/Users/you/.cabinet/mcp/hermes/hermes.json",
+    hint: "Created by npx tsx scripts/mcp-connect.ts. Uses your selected Hermes profile.",
+  }],
+  actions: ["Delegate an agent run", "Check run status", "Read results", "Cancel a run"],
+  setupSteps: [{
+    title: "Set up the local bridge",
+    body: "Build mcps/mcp-cabinet, then run the connection script with the cabinet and Hermes profile you want to use. The bridge uses Hermes's normal runtime access and never enables its messaging MCP plugin.",
+    copy: "npx tsx scripts/mcp-connect.ts --cabinet YOUR_CABINET",
+  }],
+};
+
 export const MCP_CATALOG: CatalogEntry[] = [
+  HERMES,
   SLACK,
   GOOGLE_WORKSPACE,
   MICROSOFT_365,
