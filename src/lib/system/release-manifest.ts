@@ -3,6 +3,7 @@ import path from "path";
 import { PROJECT_RELEASE_MANIFEST_PATH } from "@/lib/storage/path-utils";
 import { getReleaseManifestUrl, PROJECT_ROOT } from "@/lib/runtime/runtime-config";
 import type { AppBundleKey, ReleaseAppBundle, ReleaseManifest } from "@/types";
+import { isOriginalCabinetUrl } from "@/lib/network/upstream-policy";
 
 interface PackageManifest {
   version?: string;
@@ -35,7 +36,7 @@ function buildFallbackManifest(pkg: PackageManifest): ReleaseManifest {
   const version = pkg.version || "0.0.0";
   const gitTag = `v${version}`;
   const repositoryUrl = pkg.repository?.url?.replace(/^git\+/, "").replace(/\.git$/, "") ||
-    "https://github.com/cabinetai/cabinet";
+    "https://github.com/dominic-sylvester/cabinet";
 
   return {
     manifestVersion: 1,
@@ -126,8 +127,11 @@ export async function fetchLatestReleaseManifest(): Promise<{
   const bundled = await readBundledReleaseManifest();
   const manifestUrl = getReleaseManifestUrl();
 
+  if (!manifestUrl) return { manifest: bundled, manifestUrl: "", source: "bundled" };
+
   try {
     const response = await fetch(manifestUrl, {
+      redirect: "error",
       cache: "no-store",
       headers: { Accept: "application/json" },
     });
@@ -137,8 +141,12 @@ export async function fetchLatestReleaseManifest(): Promise<{
     }
 
     const json = (await response.json()) as Partial<ReleaseManifest>;
+    const manifest = normalizeReleaseManifest(json, bundled);
+    const urls = [manifest.repositoryUrl, manifest.releaseNotesUrl, manifest.sourceTarballUrl,
+      ...Object.values(manifest.appBundles || {}).map(bundle => bundle.url)];
+    if (urls.some(url => isOriginalCabinetUrl(url))) throw new Error("Original Cabinet releases are disabled.");
     return {
-      manifest: normalizeReleaseManifest(json, bundled),
+      manifest,
       manifestUrl,
       source: "remote",
     };

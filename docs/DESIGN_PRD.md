@@ -54,7 +54,7 @@ Everything that isn't content is rendered on the transparent desk, in the muted 
 - **Breadcrumb + file badge** — top-left, muted; the leaf is the only emphasized (foreground) token, like the page's identity.
 - **Toolbar actions** — top-right, muted (see §4).
 - **Folder tabs** — on the desk, connecting *down* into the sheet (see §5).
-- **Status bar** — below the sheet, on the desk (server status, file history, uncommitted count, sync, terminal, stars, share).
+- **Status bar** — below the sheet, on the desk (server status, file history, uncommitted count, sync, terminal, local help).
 - **Daemon-down banner** — a floating, themed rounded card on the desk, not a full-width stripe.
 
 The markdown editor and folder views established this pattern; **every other viewer now follows it** via `ViewerLayout` (§4).

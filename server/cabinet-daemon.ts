@@ -99,13 +99,6 @@ import {
 } from "./telegram/gateway";
 import { loadAgentDocs, loadTaskDocs } from "./search/index-agents-tasks";
 import type { SearchScope } from "./search/types";
-import {
-  clearSessionId,
-  emit as emitTelemetry,
-  getOrCreateSessionId,
-  printStartupBannerIfNeeded,
-  startTelemetryFlusher,
-} from "../src/lib/telemetry";
 
 const PORT = getDaemonPort();
 const CABINET_MANIFEST_FILE = ".cabinet";
@@ -406,18 +399,11 @@ function rejectUnauthorized(res: http.ServerResponse): void {
   res.end(JSON.stringify({ error: "Unauthorized" }));
 }
 
-
-
-
 function clearSessionStopFallbackTimer(session: ActiveSession): void {
   if (!session.stopFallbackTimer) return;
   clearTimeout(session.stopFallbackTimer);
   delete session.stopFallbackTimer;
 }
-
-
-
-
 
 async function syncConversationChunk(sessionId: string, chunk: string): Promise<void> {
   const meta = await readConversationMeta(sessionId);
@@ -800,7 +786,6 @@ function handlePtyConnection(ws: WebSocket, req: http.IncomingMessage): void {
     attachSessionSocket(session, ws);
   })();
 }
-
 
 function createStructuredSession(input: {
   sessionId: string;
@@ -2137,11 +2122,6 @@ server.listen(PORT, () => {
   const watcherBackend = probeWatcherBackend();
   console.log(`  Watcher backend: ${watcherBackend.description}`);
 
-  getOrCreateSessionId();
-  printStartupBannerIfNeeded();
-  startTelemetryFlusher();
-  emitTelemetry("app.launched", {});
-
   void reloadSchedules();
   void cleanupStaleRunningConversations();
   // Sweep composer-attachment staging dirs that were abandoned (paste
@@ -2199,8 +2179,7 @@ server.listen(PORT, () => {
 
 function shutdown(): void {
   console.log("\nShutting down...");
-  emitTelemetry("app.exited", {});
-  clearSessionId();
+
   for (const [, task] of scheduledJobs) {
     task.stop();
   }
@@ -2232,11 +2211,10 @@ wssEvents.on("error", (err) => {
 
 process.on("uncaughtException", (err) => {
   console.error("Uncaught exception:", err.message);
-  emitTelemetry("error.unhandled", { where: "uncaughtException", errorCode: err.name });
+
 });
 
 process.on("unhandledRejection", (reason) => {
   console.error("Unhandled rejection:", reason);
-  const name = reason instanceof Error ? reason.name : "UnknownRejection";
-  emitTelemetry("error.unhandled", { where: "unhandledRejection", errorCode: name });
+
 });

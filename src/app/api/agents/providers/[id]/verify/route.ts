@@ -5,10 +5,7 @@ import { withAdapterRuntimeEnv } from "@/lib/agents/adapters/utils";
 import {
   getConfiguredDefaultProviderId,
   readProviderSettings,
-} from "@/lib/agents/provider-settings";
-import { emit as emitTelemetry } from "@/lib/telemetry";
-
-type VerifyStatus =
+} from "@/lib/agents/provider-settings";type VerifyStatus =
   | "pass"
   | "not_installed"
   | "auth_required"
@@ -182,12 +179,6 @@ export async function POST(
     result.stderr,
     result.spawnError
   );
-
-  emitTelemetry("provider.verified", {
-    provider: id,
-    success: status === "pass",
-    durationMs,
-  });
 
   return NextResponse.json({
     status,

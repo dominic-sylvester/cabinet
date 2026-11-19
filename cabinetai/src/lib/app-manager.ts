@@ -16,7 +16,7 @@ import { log, success, warning } from "./log.js";
 import { npmCommand } from "./process.js";
 import { fetchReleaseManifest, resolveAppBundle, type ReleaseAppBundle } from "./release-manifest.js";
 
-const REPO_URL = "https://github.com/cabinetai/cabinet";
+const REPO_URL = "https://github.com/dominic-sylvester/cabinet";
 
 // A prebuilt app bundle is a ready-to-run standalone Next build — no npm install.
 // `npx cabinetai run` boots server.js + cabinet-daemon.cjs directly from it.

@@ -1,21 +1,6 @@
-/**
- * Registry manifest client.
- *
- * The cabinets registry (https://github.com/cabinetai/cabinets) auto-generates
- * a `manifest.json` at its repo root on every push (via the
- * `build-manifest.yml` GitHub Action). This module fetches that manifest,
- * caches it in-process, and exposes a typed `RegistryTemplate[]` to the
- * Cabinet app's home carousel and registry browser.
- *
- * If the live fetch fails (offline, rate-limited, registry unreachable),
- * we fall back to a small, hand-curated set bundled into the app so the
- * UI stays usable.
- */
+/** Remote templates are opt-in and must use an independently configured repository. */
 
-const REPO_OWNER = "cabinetai";
-const REPO_NAME = "cabinets";
-const MANIFEST_URL = `https://raw.githubusercontent.com/${REPO_OWNER}/${REPO_NAME}/HEAD/manifest.json`;
-const RAW_BASE = `https://raw.githubusercontent.com/${REPO_OWNER}/${REPO_NAME}/HEAD`;
+import { getRegistryRepository } from "@/lib/network/upstream-policy";
 
 const MANIFEST_TTL_MS = 10 * 60 * 1000;
 
@@ -58,7 +43,7 @@ let inflight: Promise<RegistryTemplate[]> | null = null;
 
 function buildCoverUrl(slug: string, cover: string | null | undefined): string | null {
   if (!cover) return null;
-  return `${RAW_BASE}/${encodeURIComponent(slug)}/${cover
+  return `${getRegistryRawBase()}/${encodeURIComponent(slug)}/${cover
     .split("/")
     .map(encodeURIComponent)
     .join("/")}`;
@@ -202,7 +187,10 @@ export const FALLBACK_TEMPLATES: RegistryTemplate[] = [
 ];
 
 async function fetchManifest(): Promise<RegistryTemplate[]> {
-  const res = await fetch(MANIFEST_URL, {
+  const repository = getRegistryRepository();
+  if (!repository) return [];
+  const res = await fetch(`https://raw.githubusercontent.com/${repository}/HEAD/manifest.json`, {
+    redirect: "error",
     next: { revalidate: 600 },
     headers: { Accept: "application/json" },
   });
@@ -213,6 +201,7 @@ async function fetchManifest(): Promise<RegistryTemplate[]> {
 }
 
 export async function getRegistryTemplates(): Promise<RegistryTemplate[]> {
+  if (!getRegistryRepository()) return [];
   if (cached && cached.expires > Date.now()) return cached.templates;
   if (inflight) return inflight;
 
@@ -233,7 +222,8 @@ export async function getRegistryTemplates(): Promise<RegistryTemplate[]> {
 }
 
 export function getRegistryRawBase(): string {
-  return RAW_BASE;
+  const repository = getRegistryRepository();
+  return repository ? `https://raw.githubusercontent.com/${repository}/HEAD` : "";
 }
 
 /**

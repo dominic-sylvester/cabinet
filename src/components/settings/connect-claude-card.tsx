@@ -3,10 +3,7 @@
 import { useEffect, useState } from "react";
 import { ExternalLink, Check, Loader2, Copy } from "lucide-react";
 import { siClaude } from "simple-icons";
-import { Button } from "@/components/ui/button";
-import { track } from "@/components/analytics/posthog-provider";
-
-function ClaudeMark({ className }: { className?: string }) {
+import { Button } from "@/components/ui/button";function ClaudeMark({ className }: { className?: string }) {
   return (
     <svg role="img" viewBox="0 0 24 24" fill="currentColor" aria-hidden className={className}>
       <path d={siClaude.path} />
@@ -72,7 +69,7 @@ export function ConnectClaudeCard() {
       const d = await r.json();
       if (!r.ok) throw new Error(d.error || "could not verify the code");
       setCode(""); setUrl(""); setPhase("connected");
-      track("claude_connected");
+
     } catch (e) {
       setError((e as Error).message); setPhase("awaiting-code");
     }

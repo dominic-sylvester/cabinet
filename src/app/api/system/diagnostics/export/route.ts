@@ -8,12 +8,7 @@ export async function GET() {
   try {
     const buffer = await buildDiagnosticsBundle();
     const date = new Date().toISOString().slice(0, 10);
-    try {
-      const { emit } = await import("@/lib/telemetry");
-      emit("diagnostics.exported", {});
-    } catch {
-      // telemetry optional
-    }
+
     return new NextResponse(new Uint8Array(buffer), {
       status: 200,
       headers: {

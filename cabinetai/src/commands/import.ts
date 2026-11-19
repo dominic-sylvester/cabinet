@@ -6,7 +6,7 @@ import { spawnSync } from "child_process";
 import { log, success, warning, error } from "../lib/log.js";
 import { findCabinetRoot, CABINET_MANIFEST } from "../lib/paths.js";
 
-const REGISTRY_REPO = "https://github.com/cabinetai/cabinets";
+import { getRegistryRepository } from "../../../src/lib/network/upstream-policy.js";
 
 export function registerImport(program: Command): void {
   program
@@ -22,6 +22,9 @@ export function registerImport(program: Command): void {
 }
 
 async function importTemplate(template: string): Promise<void> {
+  const repository = getRegistryRepository();
+  if (!repository) throw new Error("No template registry is configured for this fork.");
+  const registryRepo = `https://github.com/${repository}`;
   const slug = template.toLowerCase().replace(/[^a-z0-9-]/g, "");
   if (!slug) {
     error(`Invalid template name: "${template}"`);
@@ -42,7 +45,7 @@ async function importTemplate(template: string): Promise<void> {
     log("Fetching registry...");
     const cloneResult = spawnSync(
       "git",
-      ["clone", "--depth", "1", "--filter=blob:none", "--sparse", `${REGISTRY_REPO}.git`, "registry"],
+      ["clone", "--depth", "1", "--filter=blob:none", "--sparse", `${registryRepo}.git`, "registry"],
       { cwd: tempDir, stdio: "pipe" }
     );
 

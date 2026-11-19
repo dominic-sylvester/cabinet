@@ -285,24 +285,12 @@ function installCrashHandlers(): void {
   process.on("uncaughtExceptionMonitor", (err) => {
     write("error", "crash", "uncaught exception", undefined, err);
     writeCrashMarker(err instanceof Error ? err.message : String(err));
-    void emitCrashTelemetry();
   });
 
   process.on("unhandledRejection", (reason) => {
     write("error", "crash", "unhandled rejection", undefined, reason);
   });
-}
-
-async function emitCrashTelemetry(): Promise<void> {
-  try {
-    const { emit } = await import("@/lib/telemetry");
-    emit("crash.detected", { proc: procName });
-  } catch {
-    // telemetry is optional
-  }
-}
-
-/**
+}/**
  * One-time per-process init: sets the stream name, resolves the level,
  * wraps the console, installs crash capture. Idempotent.
  */

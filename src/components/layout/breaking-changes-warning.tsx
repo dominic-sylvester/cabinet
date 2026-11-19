@@ -175,15 +175,7 @@ export function BreakingChangesWarning() {
         </div>
 
         <div className="flex items-center justify-between gap-3 pt-1">
-          <p className="text-[11px] text-muted-foreground/70">
-            By continuing you agree to our{" "}
-            <a href="https://runcabinet.com/terms" target="_blank" rel="noopener noreferrer" className="underline underline-offset-2 hover:text-foreground">Terms</a>
-            {" "}and{" "}
-            <a href="https://runcabinet.com/privacy" target="_blank" rel="noopener noreferrer" className="underline underline-offset-2 hover:text-foreground">Privacy</a>.
-            {" "}Cabinet is an{" "}
-            <a href="https://github.com/cabinetai/cabinet" target="_blank" rel="noopener noreferrer" className="underline underline-offset-2 hover:text-foreground">open-source project</a>
-            .
-          </p>
+
           <Button onClick={acknowledge} disabled={!accepted}>
             Continue
           </Button>

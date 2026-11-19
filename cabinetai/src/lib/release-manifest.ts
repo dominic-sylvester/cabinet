@@ -15,9 +15,8 @@ export interface ReleaseManifest {
   appBundles?: Partial<Record<AppBundleKey, ReleaseAppBundle>>;
 }
 
-const DEFAULT_RELEASE_MANIFEST_URL =
-  "https://github.com/cabinetai/cabinet/releases/latest/download/cabinet-release.json";
-const DEFAULT_REPOSITORY_URL = "https://github.com/cabinetai/cabinet";
+import { independentEndpoint, isOriginalCabinetUrl } from "../../../src/lib/network/upstream-policy.js";
+const DEFAULT_REPOSITORY_URL = "https://github.com/dominic-sylvester/cabinet";
 
 function normalizeRepositoryUrl(url: string | undefined): string {
   return (url || DEFAULT_REPOSITORY_URL).replace(/^git\+/, "").replace(/\.git$/, "");
@@ -27,18 +26,8 @@ function cleanVersion(version: string): string {
   return version.replace(/^v/, "");
 }
 
-export function getReleaseManifestUrl(version?: string): string {
-  const configured = process.env.CABINET_RELEASE_MANIFEST_URL?.trim();
-  if (configured) {
-    return configured;
-  }
-
-  const clean = cleanVersion(version || "");
-  if (clean) {
-    return `https://github.com/cabinetai/cabinet/releases/download/v${clean}/cabinet-release.json`;
-  }
-
-  return DEFAULT_RELEASE_MANIFEST_URL;
+export function getReleaseManifestUrl(): string {
+  return independentEndpoint(process.env.CABINET_RELEASE_MANIFEST_URL) || "";
 }
 
 export function getAppBundleKey(platform = process.platform, arch = process.arch): AppBundleKey | null {
@@ -75,13 +64,19 @@ export function resolveAppBundle(manifest: ReleaseManifest, platform = process.p
 }
 
 export async function fetchReleaseManifest(version?: string): Promise<ReleaseManifest | null> {
+  if (!getReleaseManifestUrl()) return null;
   try {
-    const response = await fetch(getReleaseManifestUrl(version), {
+    const response = await fetch(getReleaseManifestUrl(), {
+      redirect: "error",
       headers: { "user-agent": "cabinetai" },
       signal: AbortSignal.timeout(10_000),
     });
     if (!response.ok) return null;
-    return (await response.json()) as ReleaseManifest;
+    const manifest = (await response.json()) as ReleaseManifest;
+    if (version && cleanVersion(manifest.version) !== cleanVersion(version)) return null;
+    const urls = [manifest.repositoryUrl, manifest.releaseNotesUrl, manifest.sourceTarballUrl,
+      ...Object.values(manifest.appBundles || {}).map(bundle => bundle?.url || "")];
+    return urls.some(isOriginalCabinetUrl) ? null : manifest;
   } catch {
     return null;
   }

@@ -4,8 +4,7 @@ const fs = require("fs");
 const path = require("path");
 const net = require("net");
 const { spawn } = require("child_process");
-const { app, BrowserWindow, dialog, autoUpdater, ipcMain } = require("electron");
-const { updateElectronApp } = require("update-electron-app");
+const { app, BrowserWindow, dialog, ipcMain } = require("electron");
 const {
   initBrowserViews,
   destroyAllBrowserViews,
@@ -140,7 +139,6 @@ try {
   console.error("electron: initElectronLogging failed", err);
 }
 
-const updateStatusPath = path.join(managedDataDir, ".cabinet-state", "update-status.json");
 let mainWindow = null;
 let backendChildren = [];
 // Base app URL (origin) of the embedded/dev Cabinet app. Captured the first
@@ -165,14 +163,7 @@ function getElectronInstallKind() {
 
 function getBundledNodeBinaryName() {
   return process.platform === "win32" ? "node.exe" : "node";
-}
-
-function writeUpdateStatus(status) {
-  fs.mkdirSync(path.dirname(updateStatusPath), { recursive: true });
-  fs.writeFileSync(updateStatusPath, JSON.stringify(status, null, 2), "utf8");
-}
-
-function getFreePort() {
+}function getFreePort() {
   return new Promise((resolve, reject) => {
     const server = net.createServer();
     server.listen(0, "127.0.0.1", () => {
@@ -518,97 +509,6 @@ async function startEmbeddedCabinet() {
   return { appUrl: appOrigin };
 }
 
-function configureAutoUpdates() {
-  if (process.platform !== "darwin") {
-    return;
-  }
-
-  try {
-    updateElectronApp({
-      repo: "cabinetai/cabinet",
-      updateInterval: "4 hours",
-      notifyUser: false,
-    });
-  } catch (error) {
-    writeUpdateStatus({
-      state: "failed",
-      completedAt: new Date().toISOString(),
-      installKind: getElectronInstallKind(),
-      message: "Electron update setup failed.",
-      error: error instanceof Error ? error.message : String(error),
-    });
-  }
-
-  autoUpdater.on("checking-for-update", () => {
-    writeUpdateStatus({
-      state: "checking",
-      startedAt: new Date().toISOString(),
-      installKind: getElectronInstallKind(),
-      message: "Checking for a newer Cabinet desktop release...",
-    });
-  });
-
-  autoUpdater.on("update-available", () => {
-    writeUpdateStatus({
-      state: "available",
-      startedAt: new Date().toISOString(),
-      installKind: getElectronInstallKind(),
-      message: "A new Cabinet desktop release is downloading in the background.",
-    });
-  });
-
-  autoUpdater.on("update-not-available", () => {
-    writeUpdateStatus({
-      state: "idle",
-      completedAt: new Date().toISOString(),
-      installKind: getElectronInstallKind(),
-      message: "Cabinet desktop is up to date.",
-    });
-  });
-
-  autoUpdater.on("error", (error) => {
-    writeUpdateStatus({
-      state: "failed",
-      completedAt: new Date().toISOString(),
-      installKind: getElectronInstallKind(),
-      message: "Cabinet desktop update failed.",
-      error: error instanceof Error ? error.message : String(error),
-    });
-  });
-
-  autoUpdater.on("update-downloaded", async () => {
-    writeUpdateStatus({
-      state: "restart-required",
-      completedAt: new Date().toISOString(),
-      installKind: getElectronInstallKind(),
-      message: "Restart Cabinet to finish applying the desktop update.",
-    });
-
-    const updateDialogOptions = {
-      type: "info",
-      buttons: ["Restart to update", "Later"],
-      defaultId: 0,
-      cancelId: 1,
-      title: "Cabinet update ready",
-      message: "A new Cabinet desktop release is ready.",
-      detail:
-        "Your desktop data stays outside the app bundle, but keeping a copy is still recommended while Cabinet is moving fast.",
-    };
-    // Anchor to a live window. With multi-window, the original `mainWindow`
-    // may be closed/destroyed; passing a destroyed window to showMessageBox
-    // throws "Object has been destroyed". Fall back to any live window, else
-    // show the dialog unparented.
-    const dialogParent = liveMainWindow() ?? anyLiveWindow();
-    const prompt = dialogParent
-      ? await dialog.showMessageBox(dialogParent, updateDialogOptions)
-      : await dialog.showMessageBox(updateDialogOptions);
-
-    if (prompt.response === 0) {
-      autoUpdater.quitAndInstall();
-    }
-  });
-}
-
 function cleanupBackends() {
   backendsQuitting = true;
   for (const child of backendChildren) {
@@ -804,7 +704,6 @@ app.on("second-instance", () => {
 });
 
 app.whenReady().then(async () => {
-  configureAutoUpdates();
   // Native in-app browser (browse mode). Attaches WebContentsViews to the
   // current main window; getBaseAppUrl resolves app-relative /api/assets KB
   // URLs; isDev enables the "Inspect Element" context menu.

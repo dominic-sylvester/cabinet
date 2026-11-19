@@ -72,11 +72,11 @@ export async function getUpdateCheckResult(): Promise<UpdateCheckResult> {
     dataDir: DATA_DIR,
     projectRoot: PROJECT_ROOT,
     backupRoot: BACKUP_ROOT,
-    instructions: buildInstructions(
+    instructions: latestResult.manifestUrl ? buildInstructions(
       installState.installKind,
       updateAvailable,
       installState.dirtyAppFiles
-    ),
+    ) : ["Automatic upstream updates are disabled for this fork."],
     latestReleaseNotesUrl: latest.releaseNotesUrl,
     updateStatus,
   };

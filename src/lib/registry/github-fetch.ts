@@ -1,10 +1,7 @@
 import fs from "fs/promises";
 import path from "path";
 
-const REPO_OWNER = "cabinetai";
-const REPO_NAME = "cabinets";
-const API_BASE = `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}`;
-const RAW_BASE = `https://raw.githubusercontent.com/${REPO_OWNER}/${REPO_NAME}/HEAD`;
+import { getRegistryRepository } from "@/lib/network/upstream-policy";
 
 interface TreeEntry {
   path: string;
@@ -31,7 +28,7 @@ async function ghFetch(url: string): Promise<Response> {
   };
   const token = process.env.GITHUB_TOKEN;
   if (token) headers.Authorization = `Bearer ${token}`;
-  return fetch(url, { headers });
+  return fetch(url, { headers, redirect: "error" });
 }
 
 async function fetchRepoTree(): Promise<TreeResponse> {
@@ -39,7 +36,9 @@ async function fetchRepoTree(): Promise<TreeResponse> {
     return cachedTree.data;
   }
 
-  const res = await ghFetch(`${API_BASE}/git/trees/HEAD?recursive=1`);
+  const repository = getRegistryRepository();
+  if (!repository) throw new Error("No template registry is configured.");
+  const res = await ghFetch(`https://api.github.com/repos/${repository}/git/trees/HEAD?recursive=1`);
   if (!res.ok) {
     if (res.status === 403 || res.status === 429) {
       const tokenHint = process.env.GITHUB_TOKEN
@@ -66,6 +65,9 @@ export async function downloadRegistryTemplate(
   slug: string,
   targetDir: string
 ): Promise<void> {
+  const repository = getRegistryRepository();
+  if (!repository) throw new Error("No template registry is configured.");
+  const rawBase = `https://raw.githubusercontent.com/${repository}/HEAD`;
   // 1. Get the full repo tree (cached across calls)
   const treeData = await fetchRepoTree();
 
@@ -92,12 +94,12 @@ export async function downloadRegistryTemplate(
       // Ensure parent directory exists
       await fs.mkdir(path.dirname(localPath), { recursive: true });
 
-      const rawUrl = `${RAW_BASE}/${encodeURIComponent(slug)}/${relPath
+      const rawUrl = `${rawBase}/${encodeURIComponent(slug)}/${relPath
         .split("/")
         .map(encodeURIComponent)
         .join("/")}`;
 
-      const fileRes = await fetch(rawUrl);
+      const fileRes = await fetch(rawUrl, { redirect: "error" });
       if (!fileRes.ok) {
         throw new Error(`Download failed (${fileRes.status}): ${entry.path}`);
       }

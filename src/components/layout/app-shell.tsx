@@ -40,7 +40,6 @@ import { TaskRailProvider } from "@/components/tasks/rail/task-rail-context";
 import { SearchPalette } from "@/components/search/search-palette";
 import { FileHistoryPanel } from "@/components/editor/version-history";
 import { KeyboardShortcutsModal } from "@/components/help/keyboard-shortcuts-modal";
-import { WhatsNewCard } from "@/components/help/whats-new-card";
 import { NarrowViewportHint } from "@/components/layout/narrow-viewport-hint";
 import { ConfirmDialogHost } from "@/components/ui/confirm-dialog-host";
 import { useGlobalHotkeys } from "@/hooks/use-global-hotkeys";
@@ -50,15 +49,12 @@ import { StatusBar } from "@/components/layout/status-bar";
 import { ContentSheet } from "@/components/layout/content-sheet";
 import { DaemonHealthBanner } from "@/components/layout/daemon-health-banner";
 import { CloudConnectClaudeBanner } from "@/components/layout/cloud-connect-claude-banner";
-import { CloudTierBanner } from "@/components/layout/cloud-tier-banner";
-import { CloudUpgradeModal } from "@/components/layout/cloud-upgrade-modal";
 import { TourModal } from "@/components/onboarding/tour/tour-modal";
 import { useTour } from "@/components/onboarding/tour/use-tour";
 import {
   DataDirPrompt,
   isDataDirConfirmed,
 } from "@/components/onboarding/data-dir-prompt";
-import { FeedbackPopup } from "@/components/onboarding/feedback-popup";
 import { DiagnosticsBoot } from "@/components/feedback/diagnostics-boot";
 import { StartWorkDialog, type StartWorkMode } from "@/components/composer/start-work-dialog";
 import { ROOT_CABINET_PATH } from "@/lib/cabinets/paths";
@@ -1146,8 +1142,6 @@ export function AppShell() {
       >
         <DaemonHealthBanner />
         <CloudConnectClaudeBanner />
-        <CloudTierBanner />
-        <CloudUpgradeModal />
         {!isMobile && !focusMode && <NarrowViewportHint />}
         {focusMode && (
           <div className="viewer-toolbar flex h-10 shrink-0 items-center justify-between px-4 animate-in fade-in slide-in-from-top-2 duration-300 ease-out">
@@ -1193,7 +1187,6 @@ export function AppShell() {
       <SearchPalette />
       <FileHistoryPanel />
       <KeyboardShortcutsModal />
-      <WhatsNewCard />
       <ConfirmDialogHost />
       <UpdateDialog
         open={effectiveUpdateDialogOpen}
@@ -1223,7 +1216,6 @@ export function AppShell() {
       <NotificationToasts />
       <SystemToasts />
       <ProviderSetupDialog />
-      <FeedbackPopup />
       <DiagnosticsBoot />
       <TourModal
         open={tour.open}

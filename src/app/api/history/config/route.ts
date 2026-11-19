@@ -36,13 +36,5 @@ export async function PATCH(req: NextRequest) {
     const message = err instanceof Error ? err.message : "write failed";
     return NextResponse.json({ ok: false, error: message }, { status: 500 });
   }
-  if (next.journalOnly && !current.journalOnly) {
-    try {
-      const { emit } = await import("@/lib/telemetry");
-      emit("history.tier", { tier: "journal-only" });
-    } catch {
-      // telemetry optional
-    }
-  }
   return NextResponse.json({ ok: true, config: next });
 }

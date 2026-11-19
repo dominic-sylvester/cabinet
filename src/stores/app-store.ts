@@ -372,15 +372,6 @@ export const useAppStore = create<AppState>((set, get) => ({
   },
 
   setSection: (section) => {
-    const prev = get().section;
-    if (prev.cabinetPath !== section.cabinetPath) {
-      void fetch("/api/telemetry", {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({ name: "cabinet.switched", payload: {} }),
-        keepalive: true,
-      }).catch(() => {});
-    }
     // Audit #131: keep the task side panel visible across navigation so the
     // user can launch a task and keep working while it runs. The panel is
     // dismissed explicitly via its X button or replaced by another launch.
@@ -388,15 +379,6 @@ export const useAppStore = create<AppState>((set, get) => ({
   },
 
   pushSection: (next, from) => {
-    const prev = get().section;
-    if (prev.cabinetPath !== next.cabinetPath) {
-      void fetch("/api/telemetry", {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({ name: "cabinet.switched", payload: {} }),
-        keepalive: true,
-      }).catch(() => {});
-    }
     set({ section: next, returnTo: from });
   },
 

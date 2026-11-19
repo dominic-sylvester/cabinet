@@ -2,29 +2,7 @@
 
 import { type CSSProperties, type ReactNode, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Trans } from "react-i18next";
-import {
-  ArrowLeft,
-  ArrowRight,
-  ArrowUpRight,
-  CheckCircle2,
-  Cloud,
-  Check,
-  ClipboardCheck,
-  Copy,
-  ExternalLink,
-  Globe,
-  Loader2,
-  Rocket,
-  ChevronDown,
-  ChevronRight,
-  RefreshCw,
-  Asterisk,
-  Star,
-  Terminal,
-  Zap,
-  FileText,
-  HeartPulse,
-} from "lucide-react";
+import { ArrowLeft, ArrowRight, CheckCircle2, Check, ClipboardCheck, Copy, ExternalLink, Globe, Loader2, Rocket, ChevronDown, ChevronRight, RefreshCw, Terminal, Zap, FileText, HeartPulse } from "lucide-react";
 import { HomeBlueprintBackground } from "@/components/onboarding/home-blueprint-background";
 import { KnowledgeGraph } from "@/components/onboarding/knowledge-graph";
 import { isAgentProviderSelectable } from "@/lib/agents/provider-filters";
@@ -37,13 +15,7 @@ import { MockupSidebar, type MockupTab } from "./tour/mockup-sidebar";
 import { CABINET_SHOWCASES, ShowcaseWindow } from "./cabinet-showcases";
 import { Switch } from "@/components/ui/switch";
 import { getSuggestedProviderEffort } from "@/lib/agents/runtime-options";
-import { sendTelemetry } from "@/lib/telemetry/browser";
-import {
-  recordWaitlistView,
-  recordWaitlistStart,
-  submitWaitlistEmail,
-  recordOnboardingEmail,
-} from "@/lib/telemetry/waitlist-client";
+
 import { acknowledgeDisclaimer } from "@/components/layout/breaking-changes-warning";
 import { useLocale } from "@/i18n/use-locale";
 import i18n from "@/i18n";
@@ -94,7 +66,6 @@ const ONBOARDING_VERIFY_META: Record<OnboardingVerifyStatus, { labelKey: string;
 
 interface OnboardingAnswers {
   name: string;
-  email: string;
   role: string;
   homeName: string;
   roomType: RoomType;
@@ -120,39 +91,12 @@ interface FirstAgentDraft {
   instructions: string;
 }
 
-interface CommunityCard {
-  title: string;
-  description: string;
-  cta: string;
-  href?: string;
-  icon: ReactNode;
-  iconClassName: string;
-}
-
-interface CommunityStepConfig {
-  eyebrow: string;
-  title: string;
-  description: string;
-  aside?: string;
-  cards: CommunityCard[];
-  nextLabel?: string;
-}
-
-const DISCORD_SUPPORT_URL = "https://discord.gg/hJa5TRTbTH";
-const GITHUB_REPO_URL = "https://github.com/cabinetai/cabinet";
-const GITHUB_STATS_URL = "/api/github/repo";
-const GITHUB_STARS_FALLBACK = 393;
 const WELCOME_TYPE_START_MS = 4800; // begin typing shortly after heading fades in
 const WELCOME_TYPE_CHAR_MS = 32;
 
-// Step indices after the compress pass:
-// 0 intro · 1 welcome-home · 2 what-is-cabinet · 3 knowledge (connect your bases) ·
-// 4 room-setup (pick + name + describe) · 5 provider (connect AI) ·
-// 6 team (configure first agent + heartbeat) · 7 first-task ·
-// 8 github · 9 discord · 10 cloud · 11 launch
-const COMMUNITY_START_STEP = 8;
-const COMMUNITY_END_STEP = 10;
-const STEP_COUNT = 12;
+// Onboarding proceeds from workspace setup directly to the local launch step.
+const STEP_LAUNCH = 8;
+const STEP_COUNT = 9;
 const STEP_WELCOME_HOME = 1;
 const STEP_WHAT_IS_CABINET = 2;
 const STEP_KNOWLEDGE = 3;
@@ -176,87 +120,6 @@ const WEB = {
   borderLight: "#F0E8DD",
   borderDark: "#D4C4B0",
 } as const;
-
-function DiscordIcon({ className, style }: { className?: string; style?: CSSProperties }) {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      fill="currentColor"
-      aria-hidden="true"
-      className={className}
-      style={style}
-    >
-      <path d="M20.32 4.37a16.4 16.4 0 0 0-4.1-1.28.06.06 0 0 0-.07.03c-.18.32-.38.73-.52 1.06a15.16 15.16 0 0 0-4.56 0c-.15-.34-.35-.74-.53-1.06a.06.06 0 0 0-.07-.03c-1.43.24-2.8.68-4.1 1.28a.05.05 0 0 0-.02.02C3.77 8.17 3.12 11.87 3.44 15.53a.06.06 0 0 0 .02.04 16.52 16.52 0 0 0 5.03 2.54.06.06 0 0 0 .07-.02c.39-.54.74-1.12 1.04-1.73a.06.06 0 0 0-.03-.08 10.73 10.73 0 0 1-1.6-.77.06.06 0 0 1-.01-.1l.32-.24a.06.06 0 0 1 .06-.01c3.35 1.53 6.98 1.53 10.29 0a.06.06 0 0 1 .06 0c.1.08.21.16.32.24a.06.06 0 0 1-.01.1c-.51.3-1.05.56-1.6.77a.06.06 0 0 0-.03.08c.3.61.65 1.19 1.04 1.73a.06.06 0 0 0 .07.02 16.42 16.42 0 0 0 5.03-2.54.06.06 0 0 0 .02-.04c.38-4.23-.64-7.9-2.89-11.14a.04.04 0 0 0-.02-.02ZM9.68 13.3c-.98 0-1.78-.9-1.78-2s.79-2 1.78-2c.99 0 1.79.9 1.78 2 0 1.1-.8 2-1.78 2Zm4.64 0c-.98 0-1.78-.9-1.78-2s.79-2 1.78-2c.99 0 1.79.9 1.78 2 0 1.1-.79 2-1.78 2Z" />
-    </svg>
-  );
-}
-
-function formatGithubStars(stars: number) {
-  if (stars >= 10_000) return `${(stars / 1000).toFixed(1)}k`;
-  return new Intl.NumberFormat("en-US").format(stars);
-}
-
-function CommunityCardTile({ card }: { card: CommunityCard }) {
-  const content = (
-    <>
-      <div
-        className="flex size-10 items-center justify-center rounded-xl border"
-        style={{
-          borderColor: WEB.borderLight,
-          background: WEB.accentBg,
-          color: WEB.accent,
-        }}
-      >
-        {card.icon}
-      </div>
-
-      <div className="mt-4 flex flex-col gap-1">
-        <p className="text-sm font-semibold" style={{ color: WEB.text }}>
-          {card.title}
-        </p>
-        <p className="text-sm leading-relaxed" style={{ color: WEB.textSecondary }}>
-          {card.description}
-        </p>
-      </div>
-    </>
-  );
-
-  if (!card.href) {
-    return (
-      <div
-        className="rounded-xl p-4"
-        style={{
-          border: `1px solid ${WEB.border}`,
-          background: WEB.bgCard,
-        }}
-      >
-        {content}
-      </div>
-    );
-  }
-
-  return (
-    <a
-      href={card.href}
-      target="_blank"
-      rel="noopener noreferrer"
-      className="group rounded-xl p-4 transition-all hover:-translate-y-0.5"
-      style={{
-        border: `1px solid ${WEB.border}`,
-        background: WEB.bgCard,
-      }}
-    >
-      {content}
-      <div
-        className="mt-4 inline-flex items-center gap-1 text-sm font-medium"
-        style={{ color: WEB.accent }}
-      >
-        <span>{card.cta}</span>
-        <ArrowUpRight className="size-4 transition-transform duration-200 group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
-      </div>
-    </a>
-  );
-}
 
 // Agent pre-check + mandatory-lock logic is now room-aware — see getKeywordChecks
 // and getAlwaysChecked below. The old KEYWORD_CHECKS / ALWAYS_CHECKED constants
@@ -1367,7 +1230,6 @@ function getDepartmentLabel(dept: string, roomType: RoomType): string {
   return entry ? entry[1] : "Other";
 }
 
-
 interface LibraryTemplate {
   slug: string;
   name: string;
@@ -1643,30 +1505,10 @@ const dotGridStyle: React.CSSProperties = {
   backgroundSize: "32px 32px",
 };
 
-const STEP_NAMES: Record<number, string> = {
-  0: "intro",
-  [STEP_WELCOME_HOME]: "welcome-home",
-  [STEP_WHAT_IS_CABINET]: "what-is-cabinet",
-  [STEP_KNOWLEDGE]: "knowledge",
-  [STEP_ROOM_SETUP]: "room-setup",
-  [STEP_TEAM]: "team",
-  [STEP_TASK]: "first-task",
-  [STEP_PROVIDER]: "provider",
-  [COMMUNITY_START_STEP]: "github",
-  [COMMUNITY_START_STEP + 1]: "discord",
-  [COMMUNITY_END_STEP]: "cloud",
-  [COMMUNITY_END_STEP + 1]: "launch",
-};
-
 export function OnboardingWizard({ onComplete }: { onComplete: () => void }) {
   const { t, locale, dir, setLocale } = useLocale();
   const welcomeParagraph = t("onboarding:welcome.paragraph");
   const [step, setStep] = useState(0);
-
-  useEffect(() => {
-    const stepName = STEP_NAMES[step] ?? `step-${step}`;
-    sendTelemetry("onboarding.step", { step: stepName });
-  }, [step]);
 
   // First-run language: match the OS keyboard / system language to a
   // shipped locale so onboarding is localized from screen 0. Only when the
@@ -1680,69 +1522,18 @@ export function OnboardingWizard({ onComplete }: { onComplete: () => void }) {
     autoLocaleRan.current = true;
     if (hasExplicitLocale()) return;
     let cancelled = false;
+
     void detectSystemLocale().then((detected) => {
       if (cancelled || !detected || hasExplicitLocale()) return;
       setLocale(detected);
-      sendTelemetry("onboarding.locale_autodetected", { locale: detected });
     });
     return () => {
       cancelled = true;
     };
   }, [setLocale]);
 
-  // Cabinet Cloud waitlist (replaces Tally form). View event fires when the
-  // cloud step is reached; start fires on first input; submit fires on success.
-  const [cloudEmail, setCloudEmail] = useState("");
-  const [cloudStatus, setCloudStatus] = useState<
-    "idle" | "submitting" | "success" | "already" | "error"
-  >("idle");
-  const cloudStartedRef = useRef(false);
-  const cloudViewedRef = useRef(false);
-  useEffect(() => {
-    if (step === COMMUNITY_END_STEP && !cloudViewedRef.current) {
-      cloudViewedRef.current = true;
-      recordWaitlistView("cabinet-onboarding");
-    }
-  }, [step]);
-
-  // "Keep in touch" funnel (source: onboarding-welcome), so the backend's
-  // Visits/Drop-offs panels have the full view -> start -> submit picture, not
-  // just submits. These two are anonymous (visitId + source only); the email
-  // itself is only sent on launch and only with the consent checkbox.
-  const welcomeStartedRef = useRef(false);
-  const welcomeViewedRef = useRef(false);
-  useEffect(() => {
-    if (step === STEP_WELCOME_HOME && !welcomeViewedRef.current) {
-      welcomeViewedRef.current = true;
-      recordWaitlistView("onboarding-welcome");
-    }
-  }, [step]);
-  const handleCloudInput = useCallback((value: string) => {
-    setCloudEmail(value);
-    if (cloudStatus === "error" || cloudStatus === "already") setCloudStatus("idle");
-    if (!cloudStartedRef.current && value.length > 0) {
-      cloudStartedRef.current = true;
-      recordWaitlistStart("cabinet-onboarding");
-    }
-  }, [cloudStatus]);
-  const handleCloudSubmit = useCallback(async () => {
-    const trimmed = cloudEmail.trim();
-    if (!trimmed || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmed)) {
-      setCloudStatus("error");
-      return;
-    }
-    setCloudStatus("submitting");
-    const result = await submitWaitlistEmail(trimmed, "cabinet-onboarding");
-    if (!result.ok) {
-      setCloudStatus("error");
-      return;
-    }
-    setCloudStatus(result.alreadyOnList ? "already" : "success");
-  }, [cloudEmail]);
-
   const [answers, setAnswers] = useState<OnboardingAnswers>({
     name: "",
-    email: "",
     role: "",
     homeName: "",
     // The onboarding room starts blank; the user names it and gives it a
@@ -1758,16 +1549,6 @@ export function OnboardingWizard({ onComplete }: { onComplete: () => void }) {
     [answers.roomType]
   );
   const descriptionInputRef = useRef<HTMLInputElement>(null);
-
-  // Pre-fill the Cabinet Cloud waitlist field with the email entered on the
-  // welcome step (if any). Only seeds while the field is still empty, so the
-  // user can edit it freely afterwards.
-  useEffect(() => {
-    const welcome = answers.email.trim();
-    if (step === COMMUNITY_END_STEP && welcome && !cloudEmail) {
-      setCloudEmail(welcome);
-    }
-  }, [step, answers.email, cloudEmail]);
 
   // Welcome-home typewriter. Starts after the blueprint-draw delay so the
   // cursor begins typing inside the freshly-appeared popup.
@@ -1860,11 +1641,6 @@ export function OnboardingWizard({ onComplete }: { onComplete: () => void }) {
 
   const [launching, setLaunching] = useState(false);
   const [disclaimerAccepted, setDisclaimerAccepted] = useState(false);
-  // Optional consent (not required to launch): if checked, we register the
-  // welcome-step email with our backend on launch. Checked by default; the
-  // user can opt out before launching.
-  const [keepInTouch, setKeepInTouch] = useState(true);
-  const [githubStars, setGithubStars] = useState(GITHUB_STARS_FALLBACK);
   const [providersLoading, setProvidersLoading] = useState(true);
   const [providers, setProviders] = useState<ProviderInfo[]>([]);
   const [expandedProvider, setExpandedProvider] = useState<string | null>(null);
@@ -1935,30 +1711,6 @@ export function OnboardingWizard({ onComplete }: { onComplete: () => void }) {
     () => (expandedProvider ? providers.find((p) => p.id === expandedProvider) || null : null),
     [expandedProvider, providers]
   );
-
-  useEffect(() => {
-    const controller = new AbortController();
-
-    const fetchGitHubStats = async () => {
-      try {
-        const res = await fetch(GITHUB_STATS_URL, {
-          signal: controller.signal,
-          cache: "no-store",
-        });
-        if (!res.ok) return;
-
-        const data = await res.json();
-        if (typeof data.stars === "number") {
-          setGithubStars(data.stars);
-        }
-      } catch {
-        // ignore
-      }
-    };
-
-    void fetchGitHubStats();
-    return () => controller.abort();
-  }, []);
 
   useEffect(() => {
     fetch("/api/system/cabinet-manifest")
@@ -2082,7 +1834,6 @@ export function OnboardingWizard({ onComplete }: { onComplete: () => void }) {
           roomType: answers.roomType,
           answers: {
             name: answers.name,
-            email: answers.email.trim(),
             workspaceName: answers.workspaceName,
             description: answers.description,
             teamSize: answers.teamSize,
@@ -2103,23 +1854,6 @@ export function OnboardingWizard({ onComplete }: { onComplete: () => void }) {
         }),
       });
 
-      // Only when the user opted in on the launch consent checkbox: register the
-      // welcome-step email with our backend so we can keep in touch. Goes through
-      // the waitlist (PII) channel, never the anonymous telemetry pipeline below.
-      const welcomeEmail = answers.email.trim();
-      if (
-        keepInTouch &&
-        welcomeEmail &&
-        /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(welcomeEmail)
-      ) {
-        recordOnboardingEmail(welcomeEmail);
-      }
-
-      sendTelemetry("onboarding.completed", {
-        roomType: answers.roomType ?? null,
-        provider: selectedProvider ?? null,
-      });
-
       // Persist the disclaimer acknowledgment so the standalone
       // BreakingChangesWarning modal short-circuits on the next mount and
       // the tour can flow seamlessly after the wizard.
@@ -2130,82 +1864,10 @@ export function OnboardingWizard({ onComplete }: { onComplete: () => void }) {
       console.error("Setup failed:", e);
       setLaunching(false);
     }
-  }, [answers, firstAgent, heartbeatEnabled, heartbeatSchedule, selectedProvider, selectedModel, selectedEffort, locale, onComplete, keepInTouch]);
+  }, [answers, firstAgent, heartbeatEnabled, heartbeatSchedule, selectedProvider, selectedModel, selectedEffort, locale, onComplete]);
 
-  const communitySteps: CommunityStepConfig[] = [
-    {
-      eyebrow: "GitHub",
-      title: t("onboarding:github.title"),
-      description: t("onboarding:github.description"),
-      aside: t("onboarding:github.aside"),
-      nextLabel: t("onboarding:actions.next"),
-      cards: [],
-    },
-    {
-      eyebrow: "Discord",
-      title: t("onboarding:discord.title"),
-      description: t("onboarding:discord.description"),
-      aside: t("onboarding:discord.aside"),
-      nextLabel: t("onboarding:actions.next"),
-      cards: [
-        {
-          title: "Join the Discord",
-          description:
-            "Meet the people building Cabinet, see what's shipping, and toss ideas into the fire while they are still hot.",
-          cta: "Join the chat",
-          href: DISCORD_SUPPORT_URL,
-          icon: <DiscordIcon className="size-4" />,
-          iconClassName: "",
-        },
-        {
-          title: "Why people stay",
-          description:
-            "Early features, fast answers, behind-the-scenes progress, and the occasional delightful chaos of building in public.",
-          cta: "",
-          icon: <Asterisk className="size-4" />,
-          iconClassName: "",
-        },
-      ],
-    },
-    {
-      eyebrow: "Cabinet Cloud",
-      title: t("onboarding:cloud.title"),
-      description: t("onboarding:cloud.description"),
-      aside: t("onboarding:cloud.aside"),
-      cards: [
-        {
-          title: "Connect from anywhere",
-          description:
-            "One Cabinet across phone, laptop, and browser. Pick up exactly where you left off, no setup required.",
-          cta: "",
-          icon: <Cloud className="size-4" />,
-          iconClassName: "",
-        },
-        {
-          title: "Agents that don't sleep",
-          description:
-            "Your AI team keeps running 24/7 in the background. Wake up to drafts written, inboxes triaged, and research done.",
-          cta: "",
-          icon: <Rocket className="size-4" />,
-          iconClassName: "",
-        },
-      ],
-    },
-  ];
-  const communityStep =
-    step >= COMMUNITY_START_STEP && step <= COMMUNITY_END_STEP
-      ? communitySteps[step - COMMUNITY_START_STEP]
-      : null;
-  const isGitHubCommunityStep = communityStep?.eyebrow === "GitHub";
-  // The agent is optional (the user can skip and add agents later), so launch
-  // is only blocked while a launch is in flight.
-  const launchDisabled = launching;
-  const finalLaunchDisabled = launchDisabled || !disclaimerAccepted;
-  // Show the live "cabinet" left rail during the configuration steps.
-  // The live build rail runs from "Pick a room" through the first task. The
-  // What-is-a-Cabinet step shows the full window showcases instead (no rail).
+  const finalLaunchDisabled = launching || !disclaimerAccepted;
   const showRail = step >= STEP_ROOM_SETUP && step <= STEP_TASK;
-  const starsLabel = t("onboarding:github.starsLabel", { stars: formatGithubStars(githubStars) });
 
   /* ─── Shared inline styles (website tokens) ─── */
   const inputStyle: React.CSSProperties = {
@@ -2393,35 +2055,6 @@ export function OnboardingWizard({ onComplete }: { onComplete: () => void }) {
                 </div>
 
                 <div
-                  className="wh-item space-y-2"
-                  style={{ ["--wh-d" as string]: "5.08s" } as React.CSSProperties}
-                >
-                  <label className="text-sm font-medium" style={{ color: WEB.text }}>
-                    {"What's your email?"}
-                  </label>
-                  <input
-                    type="email"
-                    value={answers.email}
-                    onChange={(e) => {
-                      const v = e.target.value;
-                      setAnswers({ ...answers, email: v });
-                      if (!welcomeStartedRef.current && v.length > 0) {
-                        welcomeStartedRef.current = true;
-                        recordWaitlistStart("onboarding-welcome");
-                      }
-                    }}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter" && answers.name.trim()) {
-                        e.preventDefault();
-                        setStep(STEP_WHAT_IS_CABINET);
-                      }
-                    }}
-                    placeholder="you@example.com"
-                    style={inputStyle}
-                  />
-                </div>
-
-                <div
                   className="wh-item flex items-center justify-between pt-1"
                   style={{ ["--wh-d" as string]: "5.15s" } as React.CSSProperties}
                 >
@@ -2598,7 +2231,7 @@ export function OnboardingWizard({ onComplete }: { onComplete: () => void }) {
               firstTask={firstTask}
               setFirstTask={setFirstTask}
               onBack={() => setStep(STEP_TEAM)}
-              onNext={() => setStep(COMMUNITY_START_STEP)}
+              onNext={() => setStep(STEP_LAUNCH)}
             />
           )}
 
@@ -3087,249 +2720,9 @@ export function OnboardingWizard({ onComplete }: { onComplete: () => void }) {
           )}
 
           {/* Steps 6-8: Community */}
-          {communityStep && (
-            <div className="relative mx-auto flex max-w-2xl flex-col gap-8 animate-in fade-in duration-300">
-              {/* Floating emoji backdrop per community step */}
-              {(() => {
-                const emojiMap: Record<string, string> = {
-                  "Cabinet Cloud": "☁️",
-                };
-                const emoji = emojiMap[communityStep.eyebrow];
-                if (!emoji) return null;
-                return (
-                  <div className="pointer-events-none fixed inset-0 overflow-hidden" aria-hidden="true">
-                    {[
-                      { top: "-5%", left: "-8%", duration: "34s", delay: "-8s", opacity: 0.45, reverse: false },
-                      { top: "5%", left: "55%", duration: "42s", delay: "-17s", opacity: 0.4, reverse: true },
-                      { top: "40%", left: "-5%", duration: "38s", delay: "-12s", opacity: 0.38, reverse: true },
-                      { top: "50%", left: "60%", duration: "46s", delay: "-22s", opacity: 0.4, reverse: false },
-                      { top: "75%", left: "20%", duration: "40s", delay: "-5s", opacity: 0.35, reverse: false },
-                    ].map((cloud, i) => (
-                      <div
-                        key={i}
-                        className={`waitlist-cloud-row absolute ${cloud.reverse ? "waitlist-cloud-row-reverse" : ""}`}
-                        style={{
-                          top: cloud.top,
-                          insetInlineStart: cloud.left,
-                          opacity: cloud.opacity,
-                          ["--cloud-row-duration" as string]: cloud.duration,
-                          animationDelay: cloud.delay,
-                        }}
-                      >
-                        <span
-                          className={`select-none leading-none ${
-                            communityStep.eyebrow === "Cabinet Cloud"
-                              ? "text-[280px] sm:text-[400px]"
-                              : "text-[180px] sm:text-[260px]"
-                          }`}
-                          style={{ filter: "drop-shadow(0 18px 26px rgba(214,194,160,0.22))" }}
-                        >
-                          {emoji}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                );
-              })()}
-              <div
-                className="relative z-10 rounded-2xl p-5 sm:p-6"
-                style={{
-                  border: `1px solid ${WEB.border}`,
-                  background: communityStep.eyebrow === "Cabinet Cloud"
-                    ? `linear-gradient(180deg, rgba(252,249,244,0.96), rgba(247,241,232,0.94))`
-                    : WEB.bgCard,
-                  boxShadow: "0 1px 3px rgba(59, 47, 47, 0.04), 0 8px 30px rgba(59, 47, 47, 0.04)",
-                }}
-              >
-                <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-                  <div className="space-y-3">
-                    <div className="space-y-2">
-                      <h2
-                        className="font-logo text-xl tracking-tight italic"
-                        style={{ color: WEB.text }}
-                      >
-                        {communityStep.title}
-                      </h2>
-                      <p className="text-sm leading-relaxed" style={{ color: WEB.textSecondary }}>
-                        {communityStep.description}
-                      </p>
-                      {communityStep.aside && (
-                        <p className="text-sm leading-relaxed" style={{ color: WEB.textSecondary }}>
-                          {communityStep.aside}
-                        </p>
-                      )}
-                    </div>
-                  </div>
-                </div>
-
-                {/* Big CTA buttons — same style across all community steps */}
-                {isGitHubCommunityStep && (
-                  <div className="pt-6">
-                    <a
-                      href={GITHUB_REPO_URL}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex w-full items-center justify-between gap-4 rounded-full px-5 py-5 sm:px-6 sm:py-6 transition-all hover:-translate-y-0.5"
-                      style={{ background: WEB.accentBg, border: `1px solid ${WEB.border}` }}
-                    >
-                      <span className="flex min-w-0 items-center gap-4">
-                        <span className="flex size-11 shrink-0 items-center justify-center rounded-full shadow-sm" style={{ background: WEB.bgCard }}>
-                          <Star className="size-5 fill-current" style={{ color: WEB.accent }} />
-                        </span>
-                        <span className="flex min-w-0 flex-col items-start gap-0.5 text-left">
-                          <span className="truncate text-base font-semibold sm:text-lg" style={{ color: WEB.text }}>{t("tinyExtras:starOnGithub")}</span>
-                          <span className="text-sm" style={{ color: WEB.textSecondary }}>{t("tinyExtras:helpMoreFind")}</span>
-                        </span>
-                      </span>
-                      <span className="hidden shrink-0 rounded-full px-3 py-1 text-sm font-semibold sm:inline-flex" style={{ background: WEB.bgWarm, color: WEB.accent }}>
-                        {starsLabel}
-                      </span>
-                    </a>
-                  </div>
-                )}
-
-                {communityStep.eyebrow === "Discord" && (
-                  <div className="pt-6">
-                    <a
-                      href={DISCORD_SUPPORT_URL}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex w-full items-center justify-between gap-4 rounded-full px-5 py-5 sm:px-6 sm:py-6 transition-all hover:-translate-y-0.5"
-                      style={{ background: "#ECEAFD", border: "1px solid #D8D4F7" }}
-                    >
-                      <span className="flex min-w-0 items-center gap-4">
-                        <span className="flex size-11 shrink-0 items-center justify-center rounded-full shadow-sm" style={{ background: WEB.bgCard }}>
-                          <DiscordIcon className="size-5" style={{ color: "#5865F2" }} />
-                        </span>
-                        <span className="flex min-w-0 flex-col items-start gap-0.5 text-left">
-                          <span className="truncate text-base font-semibold sm:text-lg" style={{ color: WEB.text }}>{t("tinyExtras:joinDiscord")}</span>
-                          <span className="text-sm" style={{ color: WEB.textSecondary }}>{t("tinyExtras:chatWithBuilders")}</span>
-                        </span>
-                      </span>
-                      <span className="hidden shrink-0 rounded-full px-3 py-1 text-sm font-semibold sm:inline-flex" style={{ background: "#D8D4F7", color: "#5865F2" }}>
-                        {t("onboarding:discord.joinBadge")}
-                      </span>
-                    </a>
-                  </div>
-                )}
-
-                {communityStep.eyebrow === "Cabinet Cloud" && (
-                  <div className="pt-6">
-                    <div
-                      className="flex w-full flex-col gap-3 rounded-3xl px-5 py-5 sm:px-6 sm:py-6"
-                      style={{ background: WEB.accentBg, border: `1px solid ${WEB.border}` }}
-                    >
-                      <div className="flex min-w-0 items-center gap-4">
-                        <span className="flex size-11 shrink-0 items-center justify-center rounded-full shadow-sm" style={{ background: WEB.bgCard }}>
-                          <Cloud className="size-5" style={{ color: WEB.accent }} />
-                        </span>
-                        <div className="flex min-w-0 flex-col items-start gap-0.5 text-left">
-                          <span className="truncate text-base font-semibold sm:text-lg" style={{ color: WEB.text }}>{t("tinyExtras:joinWaitlist")}</span>
-                          <span className="text-sm" style={{ color: WEB.textSecondary }}>{t("onboarding:cloud.waitlistSubtitle")}</span>
-                        </div>
-                      </div>
-                      {cloudStatus === "success" || cloudStatus === "already" ? (
-                        <div
-                          className="flex items-center gap-2 rounded-2xl px-4 py-3 text-sm"
-                          style={{ background: WEB.bgCard, border: `1px solid ${WEB.border}`, color: WEB.text }}
-                        >
-                          <CheckCircle2 className="size-4 shrink-0" style={{ color: WEB.accent }} />
-                          <span>
-                            {cloudStatus === "already"
-                              ? t("onboarding:cloud.alreadyOnList")
-                              : t("onboarding:cloud.onList")}
-                          </span>
-                        </div>
-                      ) : (
-                        <form
-                          onSubmit={(e) => {
-                            e.preventDefault();
-                            void handleCloudSubmit();
-                          }}
-                          className="flex flex-col gap-2 sm:flex-row"
-                        >
-                          <input
-                            type="email"
-                            inputMode="email"
-                            autoComplete="email"
-                            placeholder={t("tinyExtras:emailPlaceholder")}
-                            value={cloudEmail}
-                            onChange={(e) => handleCloudInput(e.target.value)}
-                            disabled={cloudStatus === "submitting"}
-                            className="flex-1 rounded-full px-4 text-sm outline-none"
-                            style={{
-                              background: WEB.bgCard,
-                              border: `1px solid ${cloudStatus === "error" ? "#dc2626" : WEB.border}`,
-                              color: WEB.text,
-                              height: 44,
-                              fontFamily: "inherit",
-                            }}
-                          />
-                          <button
-                            type="submit"
-                            disabled={cloudStatus === "submitting" || cloudEmail.trim().length === 0}
-                            className="inline-flex items-center justify-center gap-2 rounded-full px-6 text-sm font-medium text-white transition-all disabled:opacity-60"
-                            style={{ background: WEB.accent, height: 44, minWidth: 130 }}
-                          >
-                            {cloudStatus === "submitting" ? (
-                              <>
-                                <Loader2 className="size-4 animate-spin" />
-                                {t("onboarding:cloud.sending")}
-                              </>
-                            ) : (
-                              <>
-                                {t("onboarding:cloud.joinWaitlist")}
-                                <ArrowRight className="size-3.5 rtl:rotate-180" />
-                              </>
-                            )}
-                          </button>
-                        </form>
-                      )}
-                      {cloudStatus === "error" && (
-                        <div className="text-xs" style={{ color: "#dc2626" }}>
-                          {t("onboarding:cloud.error")}
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              <div className="flex items-center justify-between pt-2">
-                <button
-                  onClick={() => setStep(step - 1)}
-                  className="inline-flex items-center gap-1.5 rounded-full px-5 py-2.5 text-sm font-medium transition-colors"
-                  style={{ color: WEB.textSecondary }}
-                >
-                  <ArrowLeft className="w-3.5 h-3.5 rtl:rotate-180" />
-                  {t("onboarding:actions.back")}
-                </button>
-                {step < COMMUNITY_END_STEP ? (
-                  <button
-                    onClick={() => setStep(step + 1)}
-                    disabled={launching}
-                    className="inline-flex items-center gap-2 rounded-full px-6 py-2.5 text-sm font-medium text-white transition-all hover:-translate-y-0.5"
-                    style={{ background: WEB.accent }}
-                  >
-                    {communityStep.nextLabel}
-                    <ArrowRight className="w-3.5 h-3.5 rtl:rotate-180" />
-                  </button>
-                ) : (
-                  <button
-                    onClick={() => setStep(COMMUNITY_END_STEP + 1)}
-                    className="inline-flex items-center gap-2 rounded-full px-6 py-2.5 text-sm font-medium text-white transition-all hover:-translate-y-0.5"
-                    style={{ background: WEB.accent }}
-                  >
-                    {t("onboarding:actions.next")}
-                    <ArrowRight className="w-3.5 h-3.5 rtl:rotate-180" />
-                  </button>
-                )}
-              </div>
-            </div>
-          )}
 
           {/* Step 7: Launch — Summary + data directory */}
-          {step === COMMUNITY_END_STEP + 1 && (
+          {step === STEP_LAUNCH && (
             <div className="mx-auto flex max-w-4xl flex-col gap-6 animate-in fade-in duration-300">
               <div className="text-center space-y-2">
                 <h1 className="font-logo text-2xl tracking-tight italic">
@@ -3435,7 +2828,6 @@ export function OnboardingWizard({ onComplete }: { onComplete: () => void }) {
                 </div>
               </div>
 
-
               <div
                 className="rounded-xl p-4 space-y-3 text-sm"
                 style={{
@@ -3499,22 +2891,7 @@ export function OnboardingWizard({ onComplete }: { onComplete: () => void }) {
                     </span>
                   </li>
                 </ul>
-                <label
-                  className="flex cursor-pointer items-start gap-2 pt-1"
-                  style={{ color: WEB.text }}
-                >
-                  <input
-                    type="checkbox"
-                    name="keep-in-touch"
-                    checked={keepInTouch}
-                    onChange={(e) => setKeepInTouch(e.target.checked)}
-                    className="mt-0.5 size-4 shrink-0 rounded"
-                    style={{ borderColor: WEB.border, accentColor: WEB.accent }}
-                  />
-                  <span style={{ color: WEB.textSecondary }}>
-                    {t("onboarding:launch.keepInTouch")}
-                  </span>
-                </label>
+
                 <label
                   className="flex cursor-pointer items-start gap-2"
                   style={{ color: WEB.text }}
@@ -3530,48 +2907,12 @@ export function OnboardingWizard({ onComplete }: { onComplete: () => void }) {
                   />
                   <span>{t("breakingChangesPlus:iUnderstand")}</span>
                 </label>
-                <p
-                  className="text-[11px]"
-                  style={{ color: WEB.textTertiary }}
-                >
-                  <Trans
-                    i18nKey="onboarding:launch.legalNotice"
-                    components={{
-                      terms: (
-                        <a
-                          href="https://runcabinet.com/terms"
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="underline underline-offset-2"
-                          style={{ color: WEB.textSecondary }}
-                        />
-                      ),
-                      privacy: (
-                        <a
-                          href="https://runcabinet.com/privacy"
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="underline underline-offset-2"
-                          style={{ color: WEB.textSecondary }}
-                        />
-                      ),
-                      oss: (
-                        <a
-                          href="https://github.com/cabinetai/cabinet"
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="underline underline-offset-2"
-                          style={{ color: WEB.textSecondary }}
-                        />
-                      ),
-                    }}
-                  />
-                </p>
+
               </div>
 
               <div className="flex items-center justify-between pt-2">
                 <button
-                  onClick={() => setStep(COMMUNITY_END_STEP)}
+                  onClick={() => setStep(STEP_TASK)}
                   className="inline-flex items-center gap-1.5 rounded-full px-5 py-2.5 text-sm font-medium transition-colors"
                   style={{ color: WEB.textSecondary }}
                 >

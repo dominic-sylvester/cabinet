@@ -1,106 +1,27 @@
 <p align="center">
-  <img src="assets/cabinet-wordmark.svg" alt="cabinet /ˈkab.ɪ.nət/" width="920">
+  <img src="assets/cabinet-wordmark.svg" alt="Cabinet" width="920">
 </p>
 
-<p align="center">
-  <img src="https://runcabinet.com/demo.gif" alt="Cabinet demo" width="900">
-</p>
+# Cabinet
 
-<h1 align="center">🗄️ Cabinet</h1>
+An independent, self-hosted knowledge workspace. Knowledge files stay on disk; AI providers and integrations connect only through the services you configure.
 
-<p align="center">
-  <strong>Your knowledge base. Your AI team.</strong><br />
-  <sub>🗂️ Files on disk &nbsp;•&nbsp; 📁 AI workspaces &nbsp;•&nbsp; 🧠 Agents with memory</sub>
-</p>
+This fork removes the original project's telemetry, analytics, feedback and community prompts, GitHub-star requests, cloud promotions, and native automatic updates. Remote release checks and template browsing are opt-in and reject original Cabinet endpoints. See [Privacy](TELEMETRY.md).
 
-<p align="center">
-  The AI-first startup OS where everything lives as markdown files on disk. No database. No vendor lock-in. Self-hosted. Your data never leaves your machine.
-</p>
+## Run this fork
 
-<p align="center">
-  Built by Hila Shmuel, former Engineering Manager at Apple — now building Cabinet in public, with the open-source community.
-</p>
-
-<p align="center">
-  <a href="https://x.com/HilaShmuel" target="_blank" rel="noopener noreferrer">@HilaShmuel</a>&nbsp; • &nbsp;
-  <a href="https://runcabinet.com" target="_blank" rel="noopener noreferrer">runcabinet.com</a>&nbsp; • &nbsp;
-  <a href="mailto:hi@runcabinet.com" target="_blank" rel="noopener noreferrer">hi@runcabinet.com</a>
-</p>
-
-<p align="center">
-  <a href="https://github.com/cabinetai/cabinet/stargazers" target="_blank" rel="noopener noreferrer">
-    <img src="https://img.shields.io/github/stars/cabinetai/cabinet?style=for-the-badge&logo=github&logoColor=white&label=Star%20the%20vision%20%F0%9F%98%8D%F0%9F%8C%9F&labelColor=4b4b4b&color=f5b301" alt="Star Cabinet on GitHub" valign="middle">
-  </a>&nbsp;
-  <a href="https://discord.gg/hJa5TRTbTH" target="_blank" rel="noopener noreferrer">
-    <img src="https://img.shields.io/badge/Discord-Join%20the%20community-5865F2?style=for-the-badge&logo=discord&logoColor=white&labelColor=4b4b4b" alt="Join the Discord" valign="middle">
-  </a>&nbsp;
-  <a href="https://runcabinet.com/waitlist" target="_blank" rel="noopener noreferrer">
-    <img src="https://img.shields.io/badge/%F0%9F%97%84%EF%B8%8F%20Cabinet-Cloud%20Waitlist-55c938?style=for-the-badge&labelColor=4b4b4b" alt="Cabinet Cloud Waitlist" valign="middle">
-  </a>&nbsp;
-  <a href="https://coderabbit.ai" target="_blank" rel="noopener noreferrer">
-    <img src="https://img.shields.io/coderabbit/prs/github/cabinetai/cabinet?utm_source=oss&utm_medium=github&utm_campaign=cabinetai%2Fcabinet&labelColor=171717&color=FF570A&link=https%3A%2F%2Fcoderabbit.ai&label=CodeRabbit+Reviews" alt="CodeRabbit Pull Request Reviews" valign="middle">
-  </a>
-</p>
-
----
-
-## From zero to AI team in 2 minutes
+From this checkout:
 
 ```bash
-npx create-cabinet@latest
-cd cabinet
+npm ci
 npm run dev:all
 ```
 
-Open [http://localhost:4000](http://localhost:4000). The onboarding wizard builds your custom AI team in 5 questions.
+Open [http://localhost:4000](http://localhost:4000). For the desktop shell, run `npm run electron:start` after starting the development servers.
+
+The public `cabinetai` and `create-cabinet` npm packages belong to the original project; use this checkout rather than those public installers for this fork.
 
 ---
-
-## Install, update, uninstall
-
-Cabinet runs entirely through `npx` — no global install needed. The CLI is the [`cabinetai`](https://www.npmjs.com/package/cabinetai) package; `create-cabinet` is a thin wrapper around it.
-
-### Install / create
-
-```bash
-npx create-cabinet@latest          # create a cabinet and start it
-npx cabinetai create my-startup    # just create, don't start
-npx cabinetai run                  # start Cabinet in the current dir
-```
-
-On first run, Cabinet downloads the prebuilt app bundle to `~/.cabinet/app/v{version}/`. Your cabinet directory is just a folder of markdown files — put it anywhere.
-
-### Update
-
-```bash
-npx cabinetai update               # check for and install a newer app version
-```
-
-The CLI compares your installed app version against `cabinet-release.json` from the latest GitHub Release.
-
-### Uninstall / remove
-
-```bash
-npx cabinetai uninstall            # remove cached app versions only
-npx cabinetai uninstall --all      # also remove global state + telemetry data
-npx cabinetai uninstall --yes      # skip the confirmation prompt
-npx cabinetai remove               # alias for uninstall
-```
-
-The command prints a summary of what will be deleted and asks for confirmation before doing anything. **Your cabinet directories and their data are never touched — those you'd delete manually.**
-
-`--all` additionally removes the platform-specific telemetry directory:
-
-- macOS: `~/Library/Application Support/cabinet-telemetry/`
-- Windows: `%APPDATA%\cabinet-telemetry\`
-- Linux: `$XDG_CONFIG_HOME/cabinet/` (falls back to `~/.config/cabinet/`)
-
-To wipe Cabinet completely, run `uninstall --all` and then `rm -rf` your cabinet directories yourself.
-
-See [docs/CABINETAI.md](docs/CABINETAI.md) for the full CLI reference.
-
----
-
 ## The problem
 
 Every time you start a new Claude session, it forgets everything. Your project context, your decisions, your research — gone. Scattered docs in Notion. AI sessions with no memory. Manual copy-paste between tools.
@@ -269,66 +190,21 @@ npx cabinetai run    # Zero-install runtime, downloads the prebuilt app bundle
 
 ---
 
-## Ready to build your AI team?
-
-Cabinet is free, open source, and self-hosted. Your data never leaves your machine.
-
-```bash
-npx create-cabinet my-startup
-```
-
-[Get Started](https://runcabinet.com) | <a href="https://github.com/cabinetai/cabinet/stargazers" target="_blank" rel="noopener noreferrer"><img src="https://img.shields.io/github/stars/cabinetai/cabinet?label=GitHub%20Stars&logo=github&color=f5b301" alt="GitHub Stars" valign="middle"></a>
-
----
-
 ## Changelog
 
-See [CHANGELOG.md](CHANGELOG.md) for breaking changes, or follow the full release history on the [documentation site](https://runcabinet.com).
+See [CHANGELOG.md](CHANGELOG.md) and [PROGRESS.md](PROGRESS.md) for local changes.
 
 ## Privacy
 
-Cabinet sends anonymous usage telemetry by default (event counts, versions,
-platform — never file contents, paths, prompts, or secrets).
+This fork does not collect or send product telemetry, analytics, feedback, or signup data to the original Cabinet maintainers. Local logs and manual diagnostic exports remain available. User-configured AI providers and integrations retain their normal network behavior.
 
-To turn it off, pick one:
+See [TELEMETRY.md](TELEMETRY.md) for the network boundary and optional independent release/registry configuration.
 
-```bash
-export CABINET_TELEMETRY_DISABLED=1   # env var (any shell session)
-```
-
-…or open **Settings → Privacy** and toggle **Send anonymous usage telemetry**
-off. To also wipe the local install ID and queue, run
-`npx cabinetai uninstall --all`.
-
-See [TELEMETRY.md](TELEMETRY.md) for the full event list, payload schema,
-and where data is stored.
-
-## Community
-
-Questions, ideas, feedback, screenshots, wild experiments — bring them to the [Discord](https://discord.gg/hJa5TRTbTH). That’s where the Cabinet community hangs out and where a lot of the product direction gets shaped in real time.
-
----
 
 ## Contributing
 
-Cabinet is moving fast right now. We’d love thoughtful contributors who want to help shape it early.
+Changes and pull requests belong to [this fork](https://github.com/dominic-sylvester/cabinet). No contact with the original Cabinet team is required.
 
-If you’re thinking about opening a PR, please start by joining the [Discord](https://discord.gg/hJa5TRTbTH) and talking with Hila before coding. Hila is Cabinet’s builder, and that early sync helps us keep the roadmap coherent while the product is still evolving rapidly.
+## License
 
-Once the direction is aligned, open your PR on [GitHub](https://github.com/cabinetai/cabinet). The goal is not gatekeeping — it’s making sure your energy goes into work that has a clear path to landing and shipping.
-
----
-
-MIT License
-
----
-
-## Star History
-
-<a href="https://www.star-history.com/?repos=cabinetai%2Fcabinet&type=date&legend=top-left" target="_blank" rel="noopener noreferrer">
- <picture>
-   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/chart?repos=cabinetai/cabinet&type=date&theme=dark&legend=top-left" />
-   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/chart?repos=cabinetai/cabinet&type=date&legend=top-left" />
-   <img alt="Star History Chart" src="https://api.star-history.com/chart?repos=cabinetai/cabinet&type=date&legend=top-left" />
- </picture>
-</a>
+MIT. Original copyright and license notices are preserved in [LICENSE](LICENSE).

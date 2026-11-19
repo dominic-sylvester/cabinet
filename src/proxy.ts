@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { isOriginalCabinetUrl } from "@/lib/network/upstream-policy";
 import { isAuthEnabled } from "@/lib/auth/kb-auth";
 import {
   cloudGateActive,
@@ -43,7 +44,7 @@ async function cloudProxy(req: NextRequest): Promise<NextResponse> {
     // to the request so a relative override still works; fail closed with a 401
     // if no login URL is configured rather than looping or leaking the app.
     const loginUrl = process.env.CABINET_CLOUD_LOGIN_URL;
-    if (loginUrl) {
+    if (loginUrl && !isOriginalCabinetUrl(new URL(loginUrl, req.url).href)) {
       return NextResponse.redirect(new URL(loginUrl, req.url));
     }
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -59,6 +60,8 @@ async function cloudProxy(req: NextRequest): Promise<NextResponse> {
 }
 
 export async function proxy(req: NextRequest) {
+  // The MCP gateway authenticates a scoped connection token in its own handler.
+  if (req.nextUrl.pathname === "/api/mcp") return NextResponse.next();
   // Hosted edition: Supabase-JWT gate, independent of the KB_PASSWORD path.
   // Opt-in via CABINET_JWT_JWKS_URL: only gate when it's configured. This keeps
   // the in-app gate a deliberate, verifiable choice (the host agent already gates

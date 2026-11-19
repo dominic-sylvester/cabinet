@@ -1,10 +1,9 @@
 import fs from "fs";
 import os from "os";
 import path from "path";
+import { independentEndpoint } from "@/lib/network/upstream-policy";
 
 export const PROJECT_ROOT = process.cwd();
-const DEFAULT_RELEASE_MANIFEST_URL =
-  "https://github.com/cabinetai/cabinet/releases/latest/download/cabinet-release.json";
 
 function parsePort(value: string | undefined, fallback: number): number {
   if (!value) return fallback;
@@ -200,8 +199,5 @@ export function getDaemonUrl(): string {
 }
 
 export function getReleaseManifestUrl(): string {
-  return (
-    normalizeOrigin(process.env.CABINET_RELEASE_MANIFEST_URL) ||
-    DEFAULT_RELEASE_MANIFEST_URL
-  );
+  return independentEndpoint(process.env.CABINET_RELEASE_MANIFEST_URL) || "";
 }

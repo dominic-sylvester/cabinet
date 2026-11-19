@@ -44,10 +44,7 @@ import { readLibraryPersona } from "./library-manager";
 import { listPersonas, readPersona, type AgentPersona } from "./persona-manager";
 import { renderPersonaBody } from "./persona-templating";
 import { getDefaultProviderId } from "./provider-runtime";
-import { looksLikeAwaitingInput } from "./task-heuristics";
-import { emit as emitTelemetry } from "@/lib/telemetry";
-
-export interface ConversationCompletion {
+import { looksLikeAwaitingInput } from "./task-heuristics";export interface ConversationCompletion {
   meta: ConversationMeta;
   output: string;
   status: "completed" | "failed";
@@ -81,6 +78,7 @@ interface StartConversationInput {
   cabinetPath?: string;
   cwd?: string;
   timeoutSeconds?: number;
+  onCreated?: (meta: ConversationMeta) => Promise<void>;
   onComplete?: (completion: ConversationCompletion) => Promise<void> | void;
 }
 
@@ -604,6 +602,14 @@ export async function startConversationRun(
     scheduledAt: input.scheduledAt,
   });
 
+  if (input.onCreated) {
+    try { await input.onCreated(meta); }
+    catch (error) {
+      await finalizeConversation(meta.id, { status: "failed", exitCode: 1 }, meta.cabinetPath);
+      throw error;
+    }
+  }
+
   // Composer attachments: kickoff turns upload to a staging dir keyed by
   // `stagingClientUuid`. Move them into the real conversation dir now that
   // we know `meta.id`, persist the final paths on meta so the synthetic
@@ -695,11 +701,7 @@ export async function startConversationRun(
       cwd: input.cwd,
       timeoutSeconds: input.timeoutSeconds,
     });
-    emitTelemetry("agent.run.started", {
-      provider: resolvedProviderId,
-      adapterType: resolvedAdapterType,
-    });
-    emitTelemetry("task.created", { source: input.trigger });
+
   } catch (error) {
     const message = error instanceof Error ? error.message : "Failed to start daemon session";
     await appendConversationTranscript(meta.id, `${message}\n`);
@@ -708,11 +710,7 @@ export async function startConversationRun(
       output: message,
       exitCode: 1,
     });
-    emitTelemetry("agent.run.failed", {
-      provider: resolvedProviderId,
-      adapterType: resolvedAdapterType,
-      errorCode: error instanceof Error ? error.name : "SpawnError",
-    });
+
     throw error;
   }
 
@@ -904,22 +902,6 @@ export async function waitForConversationCompletion(
         status: normalizedStatus,
       } satisfies ConversationCompletion;
 
-      emitTelemetry(
-        normalizedStatus === "completed" ? "agent.run.completed" : "agent.run.failed",
-        {
-          provider: finalMeta.providerId ?? null,
-          adapterType: finalMeta.adapterType ?? null,
-          durationMs: Date.now() - startedAt,
-          ...(normalizedStatus === "failed"
-            ? { errorCode: data.adapterErrorKind ?? "RunFailed" }
-            : { success: true }),
-        }
-      );
-      emitTelemetry("task.completed", {
-        durationMs: Date.now() - startedAt,
-        status: normalizedStatus,
-      });
-
       if (onComplete) {
         await onComplete(completion);
       }
@@ -934,16 +916,6 @@ export async function waitForConversationCompletion(
     status: "failed",
     output: "Conversation timed out while waiting for completion.",
     exitCode: 124,
-  });
-  emitTelemetry("agent.run.failed", {
-    provider: finalMeta?.providerId ?? null,
-    adapterType: finalMeta?.adapterType ?? null,
-    durationMs: Date.now() - startedAt,
-    errorCode: "Timeout",
-  });
-  emitTelemetry("task.completed", {
-    durationMs: Date.now() - startedAt,
-    status: "failed",
   });
 
   if (!finalMeta) {

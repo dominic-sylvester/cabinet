@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback, useRef, useMemo } from "react";
-import { GitBranch, RefreshCw, Check, CloudDownload, Star, X, HelpCircle, AlertTriangle, XCircle, CircleDot, Loader2, Terminal, Heart, History as HistoryIcon } from "lucide-react";
+import { GitBranch, RefreshCw, Check, CloudDownload, X, HelpCircle, AlertTriangle, XCircle, CircleDot, Loader2, Terminal, History as HistoryIcon } from "lucide-react";
 import { ActivityFeed } from "@/components/history/activity-feed";
 import { useCabinetUpdate } from "@/hooks/use-cabinet-update";
 import { useEditorStore } from "@/stores/editor-store";
@@ -12,18 +12,11 @@ import {
   selectDaemonLevel,
   useHealthStore,
 } from "@/stores/health-store";
-import { useGithubStatsStore } from "@/stores/github-stats-store";
 import { useIsCloud } from "@/lib/cloud/client-tier";
-import { StarExplosion, formatGithubStars } from "@/components/layout/star-explosion";
 import { dedupFetch } from "@/lib/api/dedup-fetch";
 import { useLocale } from "@/i18n/use-locale";
-import { useUserProfile } from "@/hooks/use-user-profile";
 import { useVisibleInterval } from "@/hooks/use-visible-interval";
 import type { TFunction } from "i18next";
-
-const DISCORD_SUPPORT_URL = "https://discord.gg/hJa5TRTbTH";
-const GITHUB_REPO_URL = "https://github.com/cabinetai/cabinet";
-const CABINET_INVITE_URL = "https://runcabinet.com";
 
 // Word counter for the open page. The editor stores the page body as
 // markdown, so we strip markdown syntax that shouldn't count as prose
@@ -60,33 +53,6 @@ function describeUncommittedStatus(
   }
 }
 
-function DiscordIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      fill="currentColor"
-      aria-hidden="true"
-      className={className}
-    >
-      <path d="M20.32 4.37a16.4 16.4 0 0 0-4.1-1.28.06.06 0 0 0-.07.03c-.18.32-.38.73-.52 1.06a15.16 15.16 0 0 0-4.56 0c-.15-.34-.35-.74-.53-1.06a.06.06 0 0 0-.07-.03c-1.43.24-2.8.68-4.1 1.28a.05.05 0 0 0-.02.02C3.77 8.17 3.12 11.87 3.44 15.53a.06.06 0 0 0 .02.04 16.52 16.52 0 0 0 5.03 2.54.06.06 0 0 0 .07-.02c.39-.54.74-1.12 1.04-1.73a.06.06 0 0 0-.03-.08 10.73 10.73 0 0 1-1.6-.77.06.06 0 0 1-.01-.1l.32-.24a.06.06 0 0 1 .06-.01c3.35 1.53 6.98 1.53 10.29 0a.06.06 0 0 1 .06 0c.1.08.21.16.32.24a.06.06 0 0 1-.01.1c-.51.3-1.05.56-1.6.77a.06.06 0 0 0-.03.08c.3.61.65 1.19 1.04 1.73a.06.06 0 0 0 .07.02 16.42 16.42 0 0 0 5.03-2.54.06.06 0 0 0 .02-.04c.38-4.23-.64-7.9-2.89-11.14a.04.04 0 0 0-.02-.02ZM9.68 13.3c-.98 0-1.78-.9-1.78-2s.79-2 1.78-2c.99 0 1.79.9 1.78 2 0 1.1-.8 2-1.78 2Zm4.64 0c-.98 0-1.78-.9-1.78-2s.79-2 1.78-2c.99 0 1.79.9 1.78 2 0 1.1-.79 2-1.78 2Z" />
-    </svg>
-  );
-}
-
-function GitHubIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      fill="currentColor"
-      aria-hidden="true"
-      className={className}
-    >
-      <path d="M12 .5a12 12 0 0 0-3.8 23.38c.6.11.82-.26.82-.58v-2.24c-3.34.73-4.04-1.42-4.04-1.42-.55-1.37-1.33-1.73-1.33-1.73-1.08-.74.08-.72.08-.72 1.2.08 1.83 1.22 1.83 1.22 1.06 1.8 2.8 1.28 3.48.98.11-.77.42-1.28.76-1.58-2.67-.3-5.47-1.32-5.47-5.86 0-1.3.47-2.36 1.23-3.2-.12-.3-.53-1.52.12-3.16 0 0 1-.32 3.3 1.22a11.67 11.67 0 0 1 6.02 0c2.3-1.54 3.3-1.22 3.3-1.22.65 1.64.24 2.86.12 3.16.77.84 1.23 1.9 1.23 3.2 0 4.55-2.8 5.56-5.48 5.86.43.37.81 1.08.81 2.19v3.25c0 .32.22.7.83.58A12 12 0 0 0 12 .5Z" />
-    </svg>
-  );
-}
-
-
 // Audit #092: surface the last successful health check in the popover so
 // users can see how stale "Running"/"Down" actually is. "5s ago" is fine,
 // "11m ago" should make a green pill suspect.
@@ -100,7 +66,6 @@ function formatRelativeAgo(ts: number | null, now: number, t: TFunction): string
   const hr = Math.round(min / 60);
   return t("status:save.savedAgoHours", { n: hr });
 }
-
 
 // Audit #018: relative-time formatter for the persistent "Saved · Xs ago"
 // state. Returns short tokens (s/m/h) with "just now" for the first 5
@@ -120,36 +85,6 @@ function formatRelativeSavedAgo(ts: number, now: number, t: TFunction): string {
 
 export function StatusBar() {
   const { t } = useLocale();
-  const profileState = useUserProfile();
-  // First name only — a warm, personal "thanks" beats a sterile
-  // "link copied". Falls back to a localized "friend" when the profile
-  // hasn't loaded or the user never set a name.
-  const shareName = useMemo(() => {
-    const p = profileState.status === "ready" ? profileState.data.profile : null;
-    const full = (p?.displayName || p?.name || "").trim();
-    return full.split(/\s+/)[0] || t("status:help.friend");
-  }, [profileState, t]);
-  const shareCabinet = useCallback(() => {
-    void navigator.clipboard
-      ?.writeText(CABINET_INVITE_URL)
-      .then(() => {
-        window.dispatchEvent(
-          new CustomEvent("cabinet:toast", {
-            detail: {
-              kind: "success",
-              message: t("status:help.shareCopied", { name: shareName }),
-            },
-          })
-        );
-      })
-      .catch(() => {
-        window.dispatchEvent(
-          new CustomEvent("cabinet:toast", {
-            detail: { kind: "error", message: t("status:help.shareFailed") },
-          })
-        );
-      });
-  }, [t, shareName]);
   const { saveStatus, currentPath, isDirty, lastSavedAt } = useEditorStore();
   const retrySave = useEditorStore((s) => s.save);
   const editorContent = useEditorStore((s) => s.content);
@@ -217,21 +152,8 @@ export function StatusBar() {
   const [uncommittedTruncated, setUncommittedTruncated] = useState(false);
   const [showUncommittedPopup, setShowUncommittedPopup] = useState(false);
   const [showActivity, setShowActivity] = useState(false);
-  const [showCommunityPopup, setShowCommunityPopup] = useState(false);
   const [pullStatus, setPullStatus] = useState<"idle" | "pulling" | "pulled" | "up-to-date" | "error">("idle");
   const [pulling, setPulling] = useState(false);
-  // Stars: shared store so cross-navigation re-mounts don't restart the
-  // load-and-animate sequence (which is what produced the visible flicker
-  // between fallback / mid-animation / final values). Component-local
-  // animation state is intentionally seeded from the store so re-mounts
-  // after the initial load skip the animation.
-  const githubStars = useGithubStatsStore((s) => s.stars);
-  const fetchStars = useGithubStatsStore((s) => s.fetchStars);
-  const hasFetchedStarsOnce = useGithubStatsStore((s) => s.hasFetchedOnce);
-  const [displayStars, setDisplayStars] = useState<number | null>(githubStars);
-  const [starsExploding, setStarsExploding] = useState(false);
-  const starsAnimRef = useRef<number | null>(null);
-  const starsAnimated = useRef(hasFetchedStarsOnce);
   const didAutoPullRef = useRef(false);
   const appLevel = useHealthStore(selectAppLevel);
   const daemonLevel = useHealthStore(selectDaemonLevel);
@@ -336,7 +258,6 @@ export function StatusBar() {
     }
   };
 
-
   const pullAndRefresh = useCallback(async () => {
     if (pulling) return;
     setPulling(true);
@@ -382,47 +303,6 @@ export function StatusBar() {
   // also fires once on visibility change, replacing the manual focus +
   // visibilitychange listeners that used to live here.
   useVisibleInterval(fetchGitStatus, 15000);
-
-  useEffect(() => {
-    void fetchStars();
-    const handleFocus = () => {
-      void fetchStars();
-    };
-    window.addEventListener("focus", handleFocus);
-    return () => window.removeEventListener("focus", handleFocus);
-  }, [fetchStars]);
-
-  // Animate the count exactly once per session — on the transition from
-  // "loading" (no value) to "loaded". Re-mounts after the value lands skip
-  // the animation entirely because the store already has the value and
-  // starsAnimated.current was seeded with hasFetchedStarsOnce on mount.
-  useEffect(() => {
-    if (githubStars === null) return;
-    if (starsAnimated.current) {
-      setDisplayStars(githubStars);
-      return;
-    }
-    starsAnimated.current = true;
-    const target = githubStars;
-    const duration = 2000;
-    const startTime = performance.now();
-    const tick = (now: number) => {
-      const progress = Math.min((now - startTime) / duration, 1);
-      const eased = 1 - Math.pow(1 - progress, 3);
-      setDisplayStars(Math.round(target * eased));
-      if (progress < 1) {
-        starsAnimRef.current = requestAnimationFrame(tick);
-      } else {
-        setDisplayStars(target);
-        setStarsExploding(true);
-        setTimeout(() => setStarsExploding(false), 900);
-      }
-    };
-    starsAnimRef.current = requestAnimationFrame(tick);
-    return () => {
-      if (starsAnimRef.current !== null) cancelAnimationFrame(starsAnimRef.current);
-    };
-  }, [githubStars]);
 
   return (
     /* Audit #060: status bar is contentinfo for the page. Audit #048: gap-3
@@ -995,133 +875,15 @@ export function StatusBar() {
           <span className="@max-[820px]:hidden">{t("status:git2.terminal")}</span>
         </button>
       </div>
-      {/* Audit #018: status-bar carries live state on the left (status pill,
-          uncommitted, save state, sync). Help / Discord / Contribute /
-          Stars used to live as four separate pills competing visually with
-          the live state. They're now collapsed into a single Help & community
-          popover so the status bar stays readable at a glance. */}
-      <div className="relative flex items-center gap-1">
-        <button
-          type="button"
-          onClick={() => setShowCommunityPopup((v) => !v)}
-          aria-label={t("status:help.menuAriaLabel")}
-          aria-expanded={showCommunityPopup}
-          title={t("status:help.menuTitle")}
-          className="inline-flex items-center gap-1.5 rounded-full border border-border bg-muted/55 px-2.5 py-1 text-muted-foreground transition-all hover:-translate-y-px hover:border-foreground/15 hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/60 focus-visible:ring-offset-1"
-        >
-          <HelpCircle className="h-3.5 w-3.5" />
-          <span className="text-[10px] font-semibold tracking-[0.04em] text-foreground @max-[820px]:hidden">
-            {t("status:help.label")}
-          </span>
-        </button>
-        {/* Stars moved out of the Help pill into their own control so the
-            count — and its count-up + burst animation — reads as a
-            standalone community signal rather than Help-pill chrome. */}
-        {displayStars !== null && (
-          <a
-            href={GITHUB_REPO_URL}
-            target="_blank"
-            rel="noopener noreferrer"
-            aria-label={t("status:help.starsAriaLabel", {
-              count: formatGithubStars(displayStars),
-            })}
-            title={t("status:help.starsTitle", {
-              count: formatGithubStars(displayStars),
-            })}
-            className="relative inline-flex items-center gap-1 rounded-full border border-border bg-muted/55 px-2.5 py-1 text-muted-foreground transition-all hover:-translate-y-px hover:border-foreground/15 hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/60 focus-visible:ring-offset-1 @max-[820px]:hidden"
-          >
-            {starsExploding && <StarExplosion />}
-            <Star className="h-3 w-3 fill-current text-amber-500/75" />
-            <span className="text-[10px] font-semibold tabular-nums tracking-[0.04em] text-foreground">
-              {formatGithubStars(displayStars)}
-            </span>
-          </a>
-        )}
-        {/* Share Cabinet — a first-class status-bar control. Sharing is the
-            single highest-leverage thing a happy user can do for the project,
-            so it gets its own pill rather than hiding in the menu. */}
-        <button
-          type="button"
-          onClick={shareCabinet}
-          aria-label={t("status:help.share")}
-          title={t("status:help.shareSubtitle")}
-          className="group inline-flex items-center gap-1.5 rounded-full border border-border bg-muted/55 px-2.5 py-1 text-muted-foreground transition-all hover:-translate-y-px hover:border-foreground/15 hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/60 focus-visible:ring-offset-1 @max-[820px]:hidden"
-        >
-          <Heart className="h-3.5 w-3.5 fill-current text-rose-300/60 transition-transform group-hover:scale-110" />
-          <span className="text-[10px] font-semibold tracking-[0.04em] text-foreground">
-            {t("status:help.share")}
-          </span>
-        </button>
-        {/* The tasks-rail toggle moved to each surface's top bar (right of the
-            "New …" action). Reach the rail from anywhere with ⌥⌘L. */}
-        {showCommunityPopup && (
-          <div className="absolute bottom-full end-0 mb-2 z-50 w-64 rounded-lg border border-border bg-background p-1.5 shadow-lg">
-            <button
-              type="button"
-              onClick={() => {
-                setSection({ type: "help" });
-                setShowCommunityPopup(false);
-              }}
-              className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-[12px] hover:bg-muted"
-            >
-              <HelpCircle className="h-3.5 w-3.5 text-muted-foreground" />
-              <span className="flex flex-col">
-                <span className="font-medium text-foreground">Help</span>
-                <span className="text-[10px] text-muted-foreground">{t("status:help.demos")}</span>
-              </span>
-            </button>
-            <a
-              href={DISCORD_SUPPORT_URL}
-              target="_blank"
-              rel="noopener noreferrer"
-              onClick={() => setShowCommunityPopup(false)}
-              className="flex items-center gap-2 rounded-md px-2 py-1.5 text-left text-[12px] hover:bg-muted"
-            >
-              <DiscordIcon className="h-3.5 w-3.5 text-[#5865F2]" />
-              <span className="flex flex-col">
-                <span className="font-medium text-foreground">{t("status:help.discord")}</span>
-                <span className="text-[10px] text-muted-foreground">{t("status:help.discordSubtitle")}</span>
-              </span>
-            </a>
-            {/* #007: "GitHub" and "Star" both linked to the same repo URL —
-                collapse into one "Star on GitHub" row. Share is dropped here
-                since it already has its own dedicated status-bar pill. */}
-            <a
-              href={GITHUB_REPO_URL}
-              target="_blank"
-              rel="noopener noreferrer"
-              onClick={() => setShowCommunityPopup(false)}
-              className="flex items-center gap-2 rounded-md px-2 py-1.5 text-left text-[12px] hover:bg-muted"
-            >
-              <GitHubIcon className="h-3.5 w-3.5 text-foreground" />
-              <span className="flex flex-col">
-                <span className="font-medium text-foreground">
-                  {displayStars === null
-                    ? "Star on GitHub"
-                    : `Star on GitHub · ${formatGithubStars(displayStars)}`}
-                </span>
-                <span className="text-[10px] text-muted-foreground">{t("status:help.githubSubtitle")}</span>
-              </span>
-            </a>
-            {/* Share also lives in the menu so it stays reachable once its
-                standalone pill collapses on a squeezed desk. */}
-            <button
-              type="button"
-              onClick={() => {
-                shareCabinet();
-                setShowCommunityPopup(false);
-              }}
-              className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-[12px] hover:bg-muted"
-            >
-              <Heart className="h-3.5 w-3.5 fill-current text-rose-300/70" />
-              <span className="flex flex-col">
-                <span className="font-medium text-foreground">{t("status:help.share")}</span>
-                <span className="text-[10px] text-muted-foreground">{t("status:help.shareSubtitle")}</span>
-              </span>
-            </button>
-          </div>
-        )}
-      </div>
+      <button
+        type="button"
+        onClick={() => setSection({ type: "help" })}
+        aria-label={t("status:help.label")}
+        className="inline-flex items-center gap-1.5 rounded-control px-2 py-1 text-ink-secondary hover:bg-muted hover:text-foreground"
+      >
+        <HelpCircle className="h-3.5 w-3.5" />
+        <span className="text-label">{t("status:help.label")}</span>
+      </button>
     </footer>
   );
 }

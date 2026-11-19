@@ -4,25 +4,25 @@
   "channel": "stable",
   "releaseDate": "2026-07-14T18:36:54.136Z",
   "gitTag": "v0.5.3",
-  "repositoryUrl": "https://github.com/cabinetai/cabinet",
-  "releaseNotesUrl": "https://github.com/cabinetai/cabinet/releases/tag/v0.5.3",
-  "sourceTarballUrl": "https://github.com/cabinetai/cabinet/archive/refs/tags/v0.5.3.tar.gz",
+  "repositoryUrl": "https://github.com/dominic-sylvester/cabinet",
+  "releaseNotesUrl": "https://github.com/dominic-sylvester/cabinet/releases/tag/v0.5.3",
+  "sourceTarballUrl": "https://github.com/dominic-sylvester/cabinet/archive/refs/tags/v0.5.3.tar.gz",
   "appBundles": {
     "darwin-arm64": {
       "assetName": "cabinet-app-darwin-arm64-v0.5.3.tgz",
-      "url": "https://github.com/cabinetai/cabinet/releases/download/v0.5.3/cabinet-app-darwin-arm64-v0.5.3.tgz"
+      "url": "https://github.com/dominic-sylvester/cabinet/releases/download/v0.5.3/cabinet-app-darwin-arm64-v0.5.3.tgz"
     },
     "darwin-x64": {
       "assetName": "cabinet-app-darwin-x64-v0.5.3.tgz",
-      "url": "https://github.com/cabinetai/cabinet/releases/download/v0.5.3/cabinet-app-darwin-x64-v0.5.3.tgz"
+      "url": "https://github.com/dominic-sylvester/cabinet/releases/download/v0.5.3/cabinet-app-darwin-x64-v0.5.3.tgz"
     },
     "linux-arm64": {
       "assetName": "cabinet-app-linux-arm64-v0.5.3.tgz",
-      "url": "https://github.com/cabinetai/cabinet/releases/download/v0.5.3/cabinet-app-linux-arm64-v0.5.3.tgz"
+      "url": "https://github.com/dominic-sylvester/cabinet/releases/download/v0.5.3/cabinet-app-linux-arm64-v0.5.3.tgz"
     },
     "linux-x64": {
       "assetName": "cabinet-app-linux-x64-v0.5.3.tgz",
-      "url": "https://github.com/cabinetai/cabinet/releases/download/v0.5.3/cabinet-app-linux-x64-v0.5.3.tgz"
+      "url": "https://github.com/dominic-sylvester/cabinet/releases/download/v0.5.3/cabinet-app-linux-x64-v0.5.3.tgz"
     }
   },
   "npmPackage": "create-cabinet",

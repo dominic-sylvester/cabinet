@@ -245,9 +245,7 @@ export async function getStatus(): Promise<{ uncommitted: number; files: Uncommi
     if (elapsed > STATUS_BUDGET_MS && !largeTierReported) {
       largeTierReported = true;
       console.warn(`[history] git status took ${elapsed}ms — large-repo tier`);
-      void import("@/lib/telemetry")
-        .then(({ emit }) => emit("history.tier", { tier: "large" }))
-        .catch(() => {});
+
     }
     // Audit #015: include the file list so the status bar can show it on
     // hover/click, not just a bare count. Capped at 50 entries to keep

@@ -105,8 +105,7 @@ export function DiagnosticsSection() {
     <div className="border-t border-border pt-6">
       <h3 className="text-[13px] font-semibold mb-1">Diagnostics</h3>
       <p className="text-[12px] text-muted-foreground mb-3">
-        Logs stay on this machine. They leave only when you export them or
-        attach them to a feedback report.
+        Logs stay on this machine. Diagnostic bundles are downloaded locally only when you choose to export them.
       </p>
 
       <div className="flex flex-wrap items-center gap-2 mb-4">

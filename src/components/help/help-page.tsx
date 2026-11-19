@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, type ReactNode } from "react";
-import { ArrowUpRight, HelpCircle, MessageCircle } from "lucide-react";
+import { ArrowUpRight, HelpCircle } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { requestShowTour } from "@/components/onboarding/tour/use-tour";
 import { TOUR_PALETTE as P } from "@/components/onboarding/tour/palette";
@@ -47,11 +47,7 @@ type DemoId =
   | "byoai"
   | "shortcuts"
   | "skills"
-  | "api-keys";
-
-const DISCORD_SUPPORT_URL = "https://discord.gg/hJa5TRTbTH";
-
-type HelpAction =
+  | "api-keys";type HelpAction =
   | { kind: "tour" }
   | { kind: "demo"; demoId: DemoId }
   | { kind: "navigate"; section: SelectedSection }
@@ -389,16 +385,7 @@ export function HelpPage() {
                   {t("helpPage:discordSubheading")}
                 </p>
               </div>
-              <a
-                href={DISCORD_SUPPORT_URL}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex flex-shrink-0 items-center gap-2 rounded-full border border-[#5865F2]/25 bg-[#5865F2]/10 px-4 py-2 text-[12.5px] font-semibold text-[#5865F2] transition-all hover:-translate-y-px hover:border-[#5865F2]/40 hover:bg-[#5865F2]/15 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/60 focus-visible:ring-offset-2"
-              >
-                <MessageCircle className="h-4 w-4" />
-                {t("helpPage:discordCta")}
-                <ArrowUpRight className="h-3.5 w-3.5" />
-              </a>
+
             </div>
           </div>
         </div>

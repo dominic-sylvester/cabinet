@@ -33,13 +33,6 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    try {
-      const { emit } = await import("@/lib/telemetry");
-      emit("history.restored", { source: "panel" });
-    } catch {
-      // telemetry optional
-    }
-
     return NextResponse.json({ ok: true });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Unknown error";

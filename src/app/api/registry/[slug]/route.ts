@@ -27,9 +27,7 @@ async function markdownToHtml(markdown: string): Promise<string> {
   return String(result);
 }
 
-const REPO_OWNER = "cabinetai";
-const REPO_NAME = "cabinets";
-const API_BASE = `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents`;
+import { getRegistryRepository, independentEndpoint } from "@/lib/network/upstream-policy";
 
 interface GitHubEntry {
   name: string;
@@ -45,17 +43,21 @@ async function ghFetch(url: string): Promise<Response> {
   };
   const token = process.env.GITHUB_TOKEN;
   if (token) headers.Authorization = `Bearer ${token}`;
-  return fetch(url, { headers, next: { revalidate: 300 } });
+  return fetch(url, { headers, next: { revalidate: 300 }, redirect: "error" });
 }
 
 async function fetchFile(downloadUrl: string): Promise<string> {
-  const res = await fetch(downloadUrl, { next: { revalidate: 300 } });
+  const endpoint = independentEndpoint(downloadUrl);
+  if (!endpoint) return "";
+  const res = await fetch(endpoint, { next: { revalidate: 300 }, redirect: "error" });
   if (!res.ok) return "";
   return res.text();
 }
 
 async function listDir(repoPath: string): Promise<GitHubEntry[]> {
-  const res = await ghFetch(`${API_BASE}/${repoPath}`);
+  const repository = getRegistryRepository();
+  if (!repository) return [];
+  const res = await ghFetch(`https://api.github.com/repos/${repository}/contents/${repoPath}`);
   if (!res.ok) return [];
   return res.json();
 }

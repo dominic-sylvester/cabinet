@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { independentEndpoint } from "@/lib/network/upstream-policy";
 import { existsSync } from "node:fs";
 import path from "node:path";
 import { cabinetTier, storageCapMb, storageUsedBytes } from "@/lib/cloud/tier";
@@ -35,7 +36,7 @@ export async function GET() {
   return NextResponse.json({
     cloud: true,
     claudeConnected: isClaudeConnected(),
-    panelUrl: process.env.CABINET_CLOUD_PANEL_URL || null,
+    panelUrl: independentEndpoint(process.env.CABINET_CLOUD_PANEL_URL),
     tier: cabinetTier(),
     storageCapMb: storageCapMb(),
     storageUsedBytes: await storageUsedBytes(),

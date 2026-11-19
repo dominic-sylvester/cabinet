@@ -2,8 +2,7 @@ import type { Command } from "commander";
 import { log, success, warning, error } from "../lib/log.js";
 import { ensureApp, listInstalledVersions } from "../lib/app-manager.js";
 import { VERSION } from "../version.js";
-const MANIFEST_URL =
-  "https://github.com/cabinetai/cabinet/releases/latest/download/cabinet-release.json";
+import { independentEndpoint } from "../../../src/lib/network/upstream-policy.js";
 
 interface ReleaseManifest {
   version: string;
@@ -30,7 +29,7 @@ async function runUpdate(): Promise<void> {
 
   const manifest = await fetchManifest();
   if (!manifest) {
-    warning("Could not fetch release manifest. Check your network connection.");
+    warning("No release manifest is configured for this fork.");
     return;
   }
 
@@ -59,8 +58,11 @@ async function runUpdate(): Promise<void> {
 }
 
 async function fetchManifest(): Promise<ReleaseManifest | null> {
+  const manifestUrl = independentEndpoint(process.env.CABINET_RELEASE_MANIFEST_URL);
+  if (!manifestUrl) return null;
   try {
-    const response = await fetch(MANIFEST_URL, {
+    const response = await fetch(manifestUrl, {
+      redirect: "error",
       headers: { "user-agent": "cabinetai" },
       signal: AbortSignal.timeout(10000),
     });

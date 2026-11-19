@@ -36,10 +36,7 @@ import type {
   ProviderModel,
 } from "@/types/agents";
 
-export type TaskRuntimeSelection = ConversationRuntimeOverride;
-
-
-const AUTO_EFFORT_ID = "__auto__";
+export type TaskRuntimeSelection = ConversationRuntimeOverride;const AUTO_EFFORT_ID = "__auto__";
 
 const EFFORT_TONES: Record<
   string,
@@ -1207,18 +1204,7 @@ function TerminalProviderPanel({
           <span className="text-zinc-400">--resume</span>/<span className="text-zinc-400">--session</span>{" "}
           is wired for Claude, Cursor, and OpenCode.
         </p>
-        <p className="text-zinc-400">
-          Want tighter Cabinet integration for your CLI?{" "}
-          <a
-            href="https://discord.gg/hJa5TRTbTH"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="font-medium text-emerald-400 underline-offset-2 hover:underline"
-          >
-            Join our Discord
-          </a>
-          {", "}we&apos;re happy to help wire up stream-parsing + session resume for it.
-        </p>
+
       </div>
     </div>
   );
@@ -1245,10 +1231,7 @@ export function TaskRuntimePicker({
   const defaultModel = useAppStore((s) => s.defaultModel);
   const defaultEffort = useAppStore((s) => s.defaultEffort);
   const loading = useAppStore((s) => s.providersLoading);
-  const [open, setOpen] = useState(false);
-
-
-  const normalizedValue = useMemo(
+  const [open, setOpen] = useState(false);  const normalizedValue = useMemo(
     () =>
       providers.length > 0
         ? normalizeSelection(

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createRemoteJWKSet, jwtVerify } from "jose";
+import { independentEndpoint } from "@/lib/network/upstream-policy";
 import {
   KB_AUTH_COOKIE,
   expectedToken,
@@ -48,7 +49,7 @@ export function cloudGateActive(): boolean {
  * enforces `exp`/`nbf`, so expired sessions fail closed here.
  */
 export async function cloudUserSub(req: NextRequest): Promise<string | null> {
-  const jwksUrl = process.env.CABINET_JWT_JWKS_URL;
+  const jwksUrl = independentEndpoint(process.env.CABINET_JWT_JWKS_URL);
   if (!jwksUrl) return null; // Not configured -> deny (fail closed).
 
   const token = req.cookies.get(CABINET_JWT_COOKIE)?.value;

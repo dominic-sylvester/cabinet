@@ -3,39 +3,7 @@
 import { useEffect, useState, useCallback, useRef, useMemo } from "react";
 import { useAppStore } from "@/stores/app-store";
 import { useTreeStore } from "@/stores/tree-store";
-import {
-  Settings,
-  CheckCircle,
-  XCircle,
-  RefreshCw,
-  Asterisk,
-  Blocks,
-  Bell,
-  Cpu,
-  Stethoscope,
-  Eye,
-  EyeOff,
-  Save,
-  Loader2,
-  CloudDownload,
-  Palette,
-  Check,
-  Info,
-  ExternalLink,
-  ChevronDown,
-  Copy,
-  ClipboardCheck,
-  HardDrive,
-  FolderOpen,
-  RotateCw,
-  CircleUser,
-  Upload,
-  Trash2,
-  Cloud,
-  ArrowRight,
-  CheckCircle2,
-  ShieldAlert,
-} from "lucide-react";
+import { Settings, CheckCircle, XCircle, RefreshCw, Asterisk, Blocks, Bell, Cpu, Stethoscope, Save, Loader2, CloudDownload, Palette, Check, Info, ExternalLink, ChevronDown, Copy, ClipboardCheck, HardDrive, FolderOpen, RotateCw, CircleUser, Upload, Trash2, ShieldAlert } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -88,24 +56,8 @@ import {
   type AvatarCategory,
   type AvatarPreset,
 } from "@/lib/agents/avatar-catalog";
-import Image from "next/image";
-import { sendTelemetry } from "@/lib/telemetry/browser";
-import {
-  recordWaitlistView,
-  recordWaitlistStart,
-  submitWaitlistEmail,
-} from "@/lib/telemetry/waitlist-client";
-import { useLocale } from "@/i18n/use-locale";
-import {
-  REQUESTABLE_LOCALES,
-  SUPPORTED_LOCALES,
-  LOCALE_LABELS,
-  localeToDir,
-  type Locale,
-} from "@/i18n";
-import { submitLanguageRequest } from "@/lib/telemetry/language-request-client";
-
-interface McpServer {
+import Image from "next/image";import { useLocale } from "@/i18n/use-locale";
+import { SUPPORTED_LOCALES, LOCALE_LABELS, localeToDir } from "@/i18n";interface McpServer {
   name: string;
   command: string;
   enabled: boolean;
@@ -192,149 +144,23 @@ const VERIFY_STATUS_META: Record<VerifyStatus, { label: string; tone: string }> 
 
 function LanguageSection() {
   const { locale, setLocale, t } = useLocale();
-  const [requesting, setRequesting] = useState<string | null>(null);
-  const [requested, setRequested] = useState<Set<string>>(() => {
-    if (typeof window === "undefined") return new Set();
-    try {
-      const raw = window.localStorage.getItem(REQUESTED_LOCALES_KEY);
-      return new Set(raw ? (JSON.parse(raw) as string[]) : []);
-    } catch {
-      return new Set();
-    }
-  });
-
-  // Derived from the locale registry so adding a locale in src/i18n/index.ts
-  // surfaces it here automatically — native labels (own script), correct dir.
-  const supported: { value: Locale; label: string; dir: "ltr" | "rtl" }[] =
-    SUPPORTED_LOCALES.map((value) => ({
-      value,
-      label: LOCALE_LABELS[value],
-      dir: localeToDir(value),
-    }));
-
-  const requestLanguage = async (code: string, label: string) => {
-    if (requesting === code || requested.has(code)) return;
-    setRequesting(code);
-    const result = await submitLanguageRequest({
-      requestedLocale: code,
-      localeLabel: label,
-      currentLocale: locale,
-      appVersion: pkgVersion,
-    });
-    setRequesting(null);
-    if (result.ok) {
-      const next = new Set(requested);
-      next.add(code);
-      setRequested(next);
-      try {
-        window.localStorage.setItem(
-          REQUESTED_LOCALES_KEY,
-          JSON.stringify([...next]),
-        );
-      } catch {
-        /* ignore localStorage failures */
-      }
-      window.dispatchEvent(
-        new CustomEvent("cabinet:toast", {
-          detail: {
-            kind: "success",
-            message: t("settings:language.requestSubmitted", { language: label }),
-          },
-        }),
-      );
-    } else {
-      window.dispatchEvent(
-        new CustomEvent("cabinet:toast", {
-          detail: {
-            kind: "error",
-            message: t("settings:language.requestFailed"),
-          },
-        }),
-      );
-    }
-  };
-
   return (
     <div>
-      <h3 className="text-[13px] font-semibold mb-1">{t("settings:language.title")}</h3>
-      <p className="text-[12px] text-muted-foreground mb-4">
-        {t("settings:language.description")}
-      </p>
-      <div
-        role="radiogroup"
-        aria-label={t("settings:language.title")}
-        className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-1"
-      >
-        {supported.map((opt) => (
-          <button
-            key={opt.value}
-            type="button"
-            role="radio"
-            aria-checked={locale === opt.value}
-            onClick={() => setLocale(opt.value)}
-            dir={opt.dir}
-            title={opt.dir === "rtl" ? "RTL ←" : undefined}
-            className={cn(
-              "rounded border px-1.5 py-1 text-[11px] leading-tight text-start truncate transition-colors",
-              locale === opt.value
-                ? "border-primary bg-primary/5 ring-1 ring-primary/20 text-foreground"
-                : "border-border text-muted-foreground/70 hover:border-primary/30 hover:text-foreground hover:bg-accent/40",
-            )}
-          >
-            {opt.label}
+      <h3 className="text-ui font-semibold mb-1">{t("settings:language.title")}</h3>
+      <p className="text-meta text-muted-foreground mb-4">{t("settings:language.description")}</p>
+      <div role="radiogroup" aria-label={t("settings:language.title")} className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-1">
+        {SUPPORTED_LOCALES.map(value => (
+          <button key={value} type="button" role="radio" aria-checked={locale === value}
+            onClick={() => setLocale(value)} dir={localeToDir(value)}
+            className={cn("rounded-control border px-2 py-1.5 text-meta text-start transition-colors",
+              locale === value ? "border-primary bg-selection text-selection-foreground" : "border-border text-muted-foreground hover:bg-accent hover:text-foreground")}>
+            {LOCALE_LABELS[value]}
           </button>
         ))}
       </div>
-
-      <div className="mt-5">
-        <div className="flex items-baseline justify-between mb-1.5">
-          <h4 className="text-[12px] font-semibold text-muted-foreground">
-            {t("settings:language.moreLanguages")}
-          </h4>
-          <span className="text-[10px] uppercase tracking-wider text-muted-foreground/60">
-            {t("settings:language.comingSoon")}
-          </span>
-        </div>
-        <p className="text-[11px] text-muted-foreground/80 mb-3">
-          {t("settings:language.moreLanguagesHint")}
-        </p>
-        <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-1">
-          {REQUESTABLE_LOCALES.map((opt) => {
-            const isRequesting = requesting === opt.code;
-            const isRequested = requested.has(opt.code);
-            return (
-              <button
-                key={opt.code}
-                type="button"
-                onClick={() => requestLanguage(opt.code, opt.label)}
-                disabled={isRequesting || isRequested}
-                title={isRequested
-                  ? t("settings:language.requestSubmitted", { language: opt.label })
-                  : opt.englishName}
-                dir={opt.dir}
-                className={cn(
-                  "rounded border border-dashed px-1.5 py-1 text-[11px] leading-tight text-start truncate transition-colors",
-                  "border-border/60 text-muted-foreground/70",
-                  isRequested
-                    ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-700 dark:text-emerald-300 cursor-default"
-                    : isRequesting
-                    ? "opacity-60 cursor-wait"
-                    : "hover:border-primary/30 hover:text-foreground hover:bg-accent/40 cursor-pointer",
-                )}
-              >
-                {opt.label}
-              </button>
-            );
-          })}
-        </div>
-      </div>
     </div>
   );
-}
-
-const REQUESTED_LOCALES_KEY = "cabinet-requested-locales";
-
-export function SettingsPage() {
+}export function SettingsPage() {
   const { t } = useLocale();
   const {
     showHiddenFiles,
@@ -434,9 +260,6 @@ export function SettingsPage() {
   // Audit #045: theme mode state.
   const [themeMode, setThemeModeState] = useState<ThemeMode>("manual");
   const [themePair, setThemePairState] = useState<{ light: string; dark: string }>({ ...DEFAULT_THEME_PAIR });
-  const [telemetryEnabled, setTelemetryEnabled] = useState<boolean | null>(null);
-  const [telemetryEnvDisabled, setTelemetryEnvDisabled] = useState(false);
-  const [telemetrySaving, setTelemetrySaving] = useState(false);
   const { setTheme: setNextTheme } = useTheme();
   const {
     update,
@@ -491,79 +314,6 @@ export function SettingsPage() {
     [themePair, setNextTheme]
   );
 
-  useEffect(() => {
-    let cancelled = false;
-    fetch("/api/telemetry/settings")
-      .then((r) => (r.ok ? r.json() : Promise.reject(new Error(String(r.status)))))
-      .then((data: { enabled?: boolean; envDisabled?: boolean }) => {
-        if (cancelled) return;
-        setTelemetryEnabled(data.enabled ?? true);
-        setTelemetryEnvDisabled(Boolean(data.envDisabled));
-      })
-      .catch(() => {
-        if (!cancelled) setTelemetryEnabled(true);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, []);
-
-  // Cabinet Cloud waitlist (About tab) — same client as the onboarding form,
-  // posts to reports.runcabinet.com with source: "cabinet-settings".
-  const [cloudEmail, setCloudEmail] = useState("");
-  const [cloudStatus, setCloudStatus] = useState<
-    "idle" | "submitting" | "success" | "already" | "error"
-  >("idle");
-  const cloudViewedRef = useRef(false);
-  const cloudStartedRef = useRef(false);
-  useEffect(() => {
-    if (tab === "about" && !cloudViewedRef.current) {
-      cloudViewedRef.current = true;
-      recordWaitlistView("cabinet-settings");
-    }
-  }, [tab]);
-  const handleCloudInput = useCallback((value: string) => {
-    setCloudEmail(value);
-    if (cloudStatus === "error" || cloudStatus === "already") setCloudStatus("idle");
-    if (!cloudStartedRef.current && value.length > 0) {
-      cloudStartedRef.current = true;
-      recordWaitlistStart("cabinet-settings");
-    }
-  }, [cloudStatus]);
-  const handleCloudSubmit = useCallback(async () => {
-    const trimmed = cloudEmail.trim();
-    if (!trimmed || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmed)) {
-      setCloudStatus("error");
-      return;
-    }
-    setCloudStatus("submitting");
-    const result = await submitWaitlistEmail(trimmed, "cabinet-settings");
-    if (!result.ok) {
-      setCloudStatus("error");
-      return;
-    }
-    setCloudStatus(result.alreadyOnList ? "already" : "success");
-  }, [cloudEmail]);
-
-  const toggleTelemetry = useCallback(async (next: boolean) => {
-    setTelemetrySaving(true);
-    try {
-      const res = await fetch("/api/telemetry/settings", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ enabled: next }),
-      });
-      if (res.ok) {
-        const data = (await res.json()) as { enabled: boolean };
-        setTelemetryEnabled(data.enabled);
-      }
-    } catch {
-      /* ignore */
-    } finally {
-      setTelemetrySaving(false);
-    }
-  }, []);
-
   const selectTheme = (themeDef: ThemeDefinition) => {
     applyTheme(themeDef);
     setActiveThemeName(themeDef.name);
@@ -574,7 +324,7 @@ export function SettingsPage() {
       setThemeModeState("manual");
       storeThemeMode("manual");
     }
-    sendTelemetry("theme.changed", { themeName: themeDef.name });
+
   };
 
   const darkThemes = THEMES.filter((t) => t.type === "dark");
@@ -1811,130 +1561,6 @@ export function SettingsPage() {
                 </p>
               </div>
 
-              <div className="border-t border-border pt-6">
-                <h3 className="text-[14px] font-semibold mb-1">{t("settings:about.privacy")}</h3>
-                <p className="text-[12px] text-muted-foreground mb-3">
-                  {t("settings:about.privacyBody")}
-                  <a
-                    href="https://github.com/cabinetai/cabinet/blob/main/TELEMETRY.md"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="ml-1 underline hover:text-foreground"
-                  >
-                    {t("settings:about.privacyLink")}
-                  </a>
-                </p>
-                <label className="flex items-center justify-between gap-3 rounded-lg border border-border p-3 cursor-pointer hover:border-primary/30 transition-colors">
-                  <div className="flex items-center gap-3">
-                    <input
-                      type="checkbox"
-                      checked={telemetryEnabled === true && !telemetryEnvDisabled}
-                      disabled={telemetryEnabled === null || telemetrySaving || telemetryEnvDisabled}
-                      onChange={(e) => toggleTelemetry(e.target.checked)}
-                      className="h-4 w-4 rounded border-border accent-primary"
-                    />
-                    <div>
-                      <span className="text-[13px] font-medium">{t("settings:about.telemetry")}</span>
-                      <p className="text-[11px] text-muted-foreground mt-0.5">
-                        {telemetryEnvDisabled
-                          ? t("settings:about.telemetryEnvDisabled")
-                          : t("settings:about.telemetryHint")}
-                      </p>
-                    </div>
-                  </div>
-                </label>
-              </div>
-
-              <div className="border-t border-border pt-6">
-                <h3 className="text-[14px] font-semibold mb-1 flex items-center gap-2">
-                  <Cloud className="h-3.5 w-3.5" />
-                  {t("settings:about.cabinetCloud")}
-                </h3>
-                <p className="text-[12px] text-muted-foreground mb-3">
-                  {t("settings:about.cloudBody")}
-                </p>
-                {cloudStatus === "success" || cloudStatus === "already" ? (
-                  <div className="flex items-center gap-2 rounded-lg border border-border bg-muted/30 px-4 py-3 text-[13px]">
-                    <CheckCircle2 className="h-4 w-4 shrink-0 text-primary" />
-                    <span>
-                      {cloudStatus === "already"
-                        ? t("settings:about.cloudAlready")
-                        : t("settings:about.cloudSuccess")}
-                    </span>
-                  </div>
-                ) : (
-                  <form
-                    onSubmit={(e) => {
-                      e.preventDefault();
-                      void handleCloudSubmit();
-                    }}
-                    className="flex flex-col gap-2 sm:flex-row"
-                  >
-                    <Input
-                      type="email"
-                      inputMode="email"
-                      autoComplete="email"
-                      placeholder={t("settings:notifications.emailPlaceholder")}
-                      value={cloudEmail}
-                      onChange={(e) => handleCloudInput(e.target.value)}
-                      disabled={cloudStatus === "submitting"}
-                      className={cn(
-                        "flex-1 h-10 text-[13px]",
-                        cloudStatus === "error" && "border-destructive focus-visible:ring-destructive/30"
-                      )}
-                    />
-                    <Button
-                      type="submit"
-                      disabled={cloudStatus === "submitting" || cloudEmail.trim().length === 0}
-                      className="h-10 gap-2 px-4 text-[13px]"
-                    >
-                      {cloudStatus === "submitting" ? (
-                        <>
-                          <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                          {t("settings:about.cloudSending")}
-                        </>
-                      ) : (
-                        <>
-                          {t("settings:about.cloudJoinWaitlist")}
-                          <ArrowRight className="h-3 w-3" />
-                        </>
-                      )}
-                    </Button>
-                  </form>
-                )}
-                {cloudStatus === "error" && (
-                  <p className="mt-2 text-[11px] text-destructive">
-                    {t("settings:about.cloudError")}
-                  </p>
-                )}
-              </div>
-
-              <div className="border-t border-border pt-6">
-                <h3 className="text-[14px] font-semibold mb-1">{t("settings:about.connectTitle")}</h3>
-                <p className="text-[12px] text-muted-foreground mb-3">
-                  {t("settings:about.connectBody")}
-                </p>
-                <div className="space-y-2">
-                  <a
-                    href="https://discord.gg/hJa5TRTbTH"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center gap-3 rounded-lg border border-primary/30 bg-primary/5 px-4 py-3 text-[13px] font-medium hover:bg-primary/10 transition-colors"
-                  >
-                    <svg className="h-4 w-4 shrink-0" viewBox="0 0 24 24" fill="currentColor"><path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028c.462-.63.874-1.295 1.226-1.994a.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.095 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.095 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z"/></svg>
-                    {t("settings:about.joinDiscord")}
-                    <span className="ms-auto text-[10px] px-2 py-0.5 rounded-full bg-primary/10 text-primary">{t("settings:common.recommended")}</span>
-                  </a>
-                  <a
-                    href="mailto:hi@runcabinet.com"
-                    className="flex items-center gap-3 rounded-lg border border-border px-4 py-3 text-[13px] text-muted-foreground hover:text-foreground hover:border-border/80 transition-colors"
-                  >
-                    <svg className="h-4 w-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
-                    hi@runcabinet.com
-                  </a>
-                </div>
-              </div>
-
               <UninstallSection />
             </div>
           )}
@@ -2058,18 +1684,7 @@ function SkillsSettings() {
           find on the internet. Stick to skills from sources you recognize, and
           skim the skill&apos;s instructions before running it.
         </p>
-        <p className="border-t border-border pt-3">
-          Questions? Join us on{" "}
-          <a
-            href="https://discord.gg/hJa5TRTbTH"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-foreground underline underline-offset-2 hover:text-primary"
-          >
-            Discord
-          </a>
-          .
-        </p>
+
       </aside>
     </div>
   );

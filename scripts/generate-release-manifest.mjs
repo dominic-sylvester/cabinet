@@ -25,7 +25,7 @@ const releaseDate = readArg("release-date", new Date().toISOString());
 const repositoryUrl = (
   readArg("repository-url") ||
   (process.env.GITHUB_REPOSITORY && `https://github.com/${process.env.GITHUB_REPOSITORY}`) ||
-  "https://github.com/cabinetai/cabinet"
+  "https://github.com/dominic-sylvester/cabinet"
 ).replace(/\.git$/, "");
 
 // Prebuilt app-bundle keys for the zero-install `npx cabinetai run` path.
